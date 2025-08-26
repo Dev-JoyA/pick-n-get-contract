@@ -11,8 +11,8 @@ contract User{
         address userAddress;
     }
 
-    mapping (uint256 => UserAccount) userAccountId;
-    mapping (address => uint256) userId;
+    mapping (uint256 => UserAccount) internal userAccountId;
+    mapping (address => uint256) internal userId;
     
     error NotFound();
     error UserNotRegistered();
@@ -44,10 +44,7 @@ contract User{
     }
 
     function _isRegistered(address _user) internal view returns(bool) {
-        if(userId[_user] == 0) {
-            revert UserNotRegistered();
-        }
-        return true;
+        return userId[_user] != 0;   
     }
 
 
