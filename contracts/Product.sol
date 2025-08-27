@@ -22,16 +22,16 @@ contract Product {
         emit ProductAdded(_id, msg.sender);
     }
 
-    function getProductOwner(uint256 _id) public view returns (address) {
+    function getProductOwner(uint256 _id) internal view returns (address) {
         require(isRegistered[_id], "Product not registered");
         return productOwner[_id];
     }
 
-    function getAllProductIds() public view returns (uint256[] memory) {
+    function getAllProductIds() internal view returns (uint256[] memory) {
         return productIds;
     }
 
-    function totalProducts() public view returns (uint256) {
+    function totalProducts() internal view returns (uint256) {
         return productCount;
     }
 }
