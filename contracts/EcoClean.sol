@@ -15,7 +15,6 @@ contract EcoClean is User, Admin, Product {
         string name;
         address productOwner;
         bytes data;
-        // ProductLib.ProductType productType;
         uint256 amount;
     }
 
@@ -78,5 +77,24 @@ contract EcoClean is User, Admin, Product {
         hasReceivedPayment[_id][_rid] = true;
         
     }
+
+
+    // PRODUCT ENDPOINT OR FUNCTIONS 
+
+    
+
+
+
+    //  function addProduct(uint256 _id) internal {
+    //     require(_id > 0, "Invalid ID");
+    //     require(!isRegistered[_id], "Product already registered");
+
+    //     productIds.push(_id);
+    //     isRegistered[_id] = true;
+    //     productOwner[_id] = msg.sender;
+    //     productCount++;
+
+    //     emit ProductAdded(_id, msg.sender);
+    // }
     
 }
