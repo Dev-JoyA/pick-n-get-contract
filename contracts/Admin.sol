@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
-import "./library/ProductLib.sol";
 
 contract Admin { 
-    using ProductLib for uint256;
 
     address[] admins;
     uint256 count;
