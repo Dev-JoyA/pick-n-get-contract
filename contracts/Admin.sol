@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
+import "./library/ProductLib.sol";
+
 contract Admin { 
+    using ProductLib for uint256;
 
     address[] admins;
     uint256 count;
+    uint256 public rate;
 
     error NotAuthorised();
     error InValid();
@@ -71,13 +75,9 @@ contract Admin {
 }
 
 
-    function setRate() internal view {
+    function setRate(uint256 _rate) internal{
         _onlyAdmin();
-
-    }
-
-    function updateRate() internal view {
-        _onlyAdmin();
+        rate = _rate;
     }
 
     function makePayment() internal view {

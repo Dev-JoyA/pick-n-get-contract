@@ -19,4 +19,24 @@ library ProductLib {
             return ProductType.OTHERS;
         }
     }
+
+    function toProductWeight(uint256 _weight, uint256 _rate, ProductType _type) internal pure returns (uint256){
+        if(_weight < 5){
+            return 0;
+        }
+
+        if(_type == ProductType.PAPER){
+            return (_weight * _rate);
+        }else if(_type == ProductType.GLASS){
+            return ((_weight * _rate) / 2 );
+        }else if(_type == ProductType.METALS){
+            return ((_weight * _rate) * 3);
+        }else if(_type == ProductType.PLASTIC){
+            return ((_weight * _rate) * 2);
+        }else if(_type == ProductType.OTHERS){
+            return ((_weight * _rate) / 3);
+        }else {
+            return 0;
+        }
+    }
 }

@@ -8,14 +8,13 @@ import "./library/ProductLib.sol";
 
 contract EcoClean is User, Admin, Product {
     using ProductLib for string;
-
-    enum ProductType {PAPER, PLASTIC, METALS, GLASS, OTHERS}
+    uint8 constant decimal = 8;
 
     struct Products {
         uint256 productId;
         string name;
         bytes data;
-        ProductType productType;
+        ProductLib.ProductType productType;
         uint256 amount;
     }
 
@@ -24,20 +23,22 @@ contract EcoClean is User, Admin, Product {
         uint256 weight;
         ProductLib.ProductType productType;
     }
-    
-    // user will recycle item
-    //users wil shop within the site
-    //admin will pay user
-    //admin will set rates of a recycled item
-    //payment based on weight
-    // swap stable coin for fiat - FE
 
+    //if user is paid 
     mapping (address => bool) isPaid;
+
+    //if user have recived payment or the item
+    mapping(uint256 => mapping(uint256 => bool)) hasReceivedPayment;
+
+    //userid, id of the product, the item
     mapping (uint256 => mapping (uint256 => userItems)) itemByUserId;
     mapping (uint256 => bool) hasRecycled;
     mapping(uint256 => uint256) public productCountByUser;
 
+    error AlreadyPaid();
+
     event ItemRecycled(address indexed user, uint256 itemId, string productType, uint256 weight);
+    event PaidForRecycledItem(address indexed user, uint256 indexed userId, uint256 itemId, ProductLib.ProductType productType);
 
     function recycleItem(string memory _type, uint256 _weight) public { 
         if(!_isRegistered(msg.sender)){
@@ -59,20 +60,22 @@ contract EcoClean is User, Admin, Product {
         emit ItemRecycled(msg.sender, productCountByUser[id], _type, _weight);
     }
 
-    function payUser() public {
+    function payUser(uint256 _id, uint256 _pid, uint256 _rate) public payable {
+        makePayment();
+        address user = userAccountId[_id].userAddress;
+        !_isRegistered(_id);
+        if(hasReceivedPayment[_id][_pid] == true){
+            revert AlreadyPaid();
+        }
+
+        uint256 itemWeight = itemByUserId[_id][_pid].weight;
+        ProductLib.ProductType _pType= itemByUserId[_id][_pid].productType;
+        uint256 amount = ProductLib.toProductWeight(itemWeight, rate, _pType);
+
+        emit PaidForRecycledItem(user, _id, _pid, _pType);
+        payable(user).transfer(amount * decimal);
+        hasReceivedPayment[_id][_pid] = true;
+        
     }
     
-
-    //  function recievedPayment(address _user) internal view{
-    //     for(uint256 i = 0; i < users.length; i++){
-    //         if(users[i] != _user){
-    //             revert NotFound();
-    //         }
-    //     }
-
-    //     uint256 _id = userId[_user]; 
-    //     if(userAccountId[_id].userAddress != _user){
-    //         revert UserNotRegistered();
-    //     }  
-    // }
 }

@@ -11,7 +11,10 @@ contract User{
         address userAddress;
     }
 
+    //used to get userAccount id and address by id
     mapping (uint256 => UserAccount) internal userAccountId;
+
+    //used to get userAccount id by address
     mapping (address => uint256) internal userId;
     
     error NotFound();
