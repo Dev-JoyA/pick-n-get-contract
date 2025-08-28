@@ -3,8 +3,8 @@ pragma solidity ^0.8.28;
 
 
 contract User{
-    address[] users;
-    uint256 count;
+    address[] private users;
+    uint256 private count;
 
     struct UserAccount {
         uint256 id;

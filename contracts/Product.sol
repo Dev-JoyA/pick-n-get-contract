@@ -2,8 +2,8 @@
 pragma solidity ^0.8.28;
 
 contract Product {
-    uint256[] private productIds;
-    uint256 private productCount;
+    uint256[] public productIds;
+    uint256 public productCount;
     uint256 private registrationCount;
 
     struct Details {
@@ -13,12 +13,13 @@ contract Product {
     }
 
     //registration id 
-    mapping(uint256 => bool) public isProducerRegistered;
+    mapping(uint256 => bool) internal isProducerRegistered;
     //registration id per details 
-    mapping (uint256 => Details) public ownerDetails;
-    mapping (uint256 => address) public productOwner;
+    mapping (uint256 => Details) internal ownerDetails;
+    // check if its the owner of the product by id
+    mapping (uint256 => address) internal productOwner;
     //registration Id
-    mapping (address => uint256) public registrationId;
+    mapping (address => uint256) internal registrationId;
 
     event ProductAdded(uint256 indexed id, address owner);
 
