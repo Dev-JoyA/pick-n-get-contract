@@ -8,36 +8,44 @@ import "./library/ItemLib.sol";
 
 contract EcoClean is User, Admin, Product {
     using ItemLib for string;
-    uint8 constant decimal = 8;
+    uint8 constant DECIMALS = 8;
+
+    enum ProductStatus {Available, NotAvailable}
 
     struct Products {
-        uint256 pId;
+        uint256 productId;
         string name;
         address owner;
         bytes data;
         uint256 amount;
+        ProductStatus productStatus;
     }
 
-    struct recycledItems{
+    struct RecycledItems{
         uint256 itemId;
         uint256 weight;
         ItemLib.ItemType itemType;
     }
 
-    mapping (address => bool) public isProducersPaid;
-    mapping(uint256 => mapping(uint256 => bool)) public hasReceivedPayment;
+    mapping (address => bool) public isProducerPaid;
+    mapping(uint256 => mapping(uint256 => bool)) public hasUserReceivedPayment;
 
-    mapping (uint256 => mapping (uint256 => recycledItems)) public itemByUserId;
+    mapping (uint256 => mapping (uint256 => RecycledItems)) public itemByUserId;
     mapping (uint256 => bool) public hasRecycled;
     mapping (uint256 => uint256) public itemCountByUser;
 
    
     mapping (uint256 => mapping(uint256 => Products)) public  allProductsByProducer;
-    mapping (uint256 => Product) public productsId;
-    mapping (uint256 => uint256) public productCountByUser;
-    mapping (uint256 => uint256[]) public allProductIdsByProducer;
+    //used for looking up a producer by his id;
+    mapping (uint256 => uint256) public productIdByOwner;
+    //producer id to number of product they have used for giving givingg id to a specific producer
+    mapping (uint256 => uint256) public productCountByOwner;
+    mapping (uint256 => bool) public validPid;
+    mapping (uint256 => uint256[]) public productsByProducerId;
 
     error AlreadyPaid();
+    error ProductSoldOut();
+    error InsufficientPayment();
 
     event ItemRecycled(address indexed user, uint256 itemId, string itemType, uint256 weight);
     event PaidForRecycledItem(address indexed user, uint256 indexed userId, uint256 itemId, ItemLib.ItemType itemType);
@@ -61,7 +69,7 @@ contract EcoClean is User, Admin, Product {
 
         itemCountByUser[id]++;
 
-       itemByUserId[id][itemCountByUser[id]] = recycledItems({
+       itemByUserId[id][itemCountByUser[id]] = RecycledItems({
             itemId: itemCountByUser[id],
             weight: _weight,
             itemType: _type.toItemType()
@@ -75,7 +83,7 @@ contract EcoClean is User, Admin, Product {
         makePayment();
         address user = userAccountId[_id].userAddress;
         !_isRegistered(_id);
-        if(hasReceivedPayment[_id][_rid] == true){
+        if(hasUserReceivedPayment[_id][_rid] == true){
             revert AlreadyPaid();
         }
 
@@ -84,13 +92,13 @@ contract EcoClean is User, Admin, Product {
         uint256 amount = ItemLib.toItemWeight(itemWeight, rate, _rType);
 
         emit PaidForRecycledItem(user, _id, _rid, _rType);
-        payable(user).transfer(amount * (10 ** decimal));
-        hasReceivedPayment[_id][_rid] = true;   
+        payable(user).transfer(amount * (10 ** DECIMALS));
+        hasUserReceivedPayment[_id][_rid] = true;   
     }
 
     // PRODUCT ENDPOINT OR FUNCTIONS 
 
-    function addProoduct(uint256 _id, string memory _name, bytes memory _data, uint256 _amount) public {
+    function addProduct(uint256 _id, string memory _name, bytes memory _data, uint256 _amount) public {
         if(isProducerRegistered[_id] == false){
             revert NotAuthorised();
         }
@@ -98,41 +106,54 @@ contract EcoClean is User, Admin, Product {
 
         productCount++;
 
-        productCountByUser[_id]++;
+        productCountByOwner[_id]++;
         
-        allProductsByProducer[_id][productCountByUser[_id]] = Products({
-            pId : productCountByUser[_id],
+        allProductsByProducer[_id][productCountByOwner[_id]] = Products({
+            productId : productCountByOwner[_id],
             name : _name,
             owner : _owner,
             data : _data,
-            amount : _amount
+            amount : _amount,
+            productStatus : ProductStatus.Available
         });
-        productIds.push(productCountByUser[_id]);
-        allProductIdsByProducer[_id] = productIds;   
+
+        productIds.push(productCountByOwner[_id]);
+        productIdByOwner[productCountByOwner[_id]] = _id;
+        productsByProducerId[_id] = productIds; 
+        validPid[productCountByOwner[_id]] = true;  
     }
 
-    function shopProduct() public {
+    function shopProduct(uint256 _pid) public payable {
+        require(_pid > 0, "Invalid product ID");
+        require(validPid[_pid] == false, "No product with that id" );
+        uint256 _owner = productIdByOwner[_pid];
+        address _producer = productOwner[_owner];
+        Products memory product = allProductsByProducer[_owner][_pid]; 
 
-    }
+        require(product.productStatus == ProductStatus.Available, "Product is sold out");
+        uint256 amount = product.amount;
+        if(msg.value != amount){
+            revert NotAuthorised();
+        }
+        productCount--;
+        productCountByOwner[_owner]--;
+        for(uint256 i = 0; i < productIds.length; i++){
+            if(productIds[i] == _pid){
+                productIds[i] = productIds[productIds.length - 1];
+                productIds.pop();
+            }
+        }
 
-    function payProducer() public {
+        product.productStatus = ProductStatus.NotAvailable;
 
+        payable(_producer).transfer(msg.value);
+
+        
+      
+
+        // Logic for shopping the product
     }
 
     
-
-
-
-    //  function addProduct(uint256 _id) internal {
-    //     require(_id > 0, "Invalid ID");
-    //     require(!isRegistered[_id], "Product already registered");
-
-    //     productIds.push(_id);
-    //     isRegistered[_id] = true;
-    //     productOwner[_id] = msg.sender;
-    //     productCount++;
-
-    //     emit ProductAdded(_id, msg.sender);
-    // }
     
 }
