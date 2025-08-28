@@ -11,9 +11,9 @@ contract EcoClean is User, Admin, Product {
     uint8 constant decimal = 8;
 
     struct Products {
-        uint256 productId;
+        uint256 pId;
         string name;
-        address productOwner;
+        address owner;
         bytes data;
         uint256 amount;
     }
@@ -24,21 +24,32 @@ contract EcoClean is User, Admin, Product {
         ItemLib.ItemType itemType;
     }
 
-    //if user is paid 
-    mapping (address => bool) isPaid;
+    mapping (address => bool) public isProducersPaid;
+    mapping(uint256 => mapping(uint256 => bool)) public hasReceivedPayment;
 
-    //if user have recived payment or the item
-    mapping(uint256 => mapping(uint256 => bool)) hasReceivedPayment;
+    mapping (uint256 => mapping (uint256 => recycledItems)) public itemByUserId;
+    mapping (uint256 => bool) public hasRecycled;
+    mapping (uint256 => uint256) public itemCountByUser;
 
-    //userid, id of the product, the item
-    mapping (uint256 => mapping (uint256 => recycledItems)) itemByUserId;
-    mapping (uint256 => bool) hasRecycled;
-    mapping(uint256 => uint256) public itemCountByUser;
+   
+    mapping (uint256 => mapping(uint256 => Products)) public  allProductsByProducer;
+    mapping (uint256 => Product) public productsId;
+    mapping (uint256 => uint256) public productCountByUser;
+    mapping (uint256 => uint256[]) public allProductIdsByProducer;
 
     error AlreadyPaid();
 
     event ItemRecycled(address indexed user, uint256 itemId, string itemType, uint256 weight);
     event PaidForRecycledItem(address indexed user, uint256 indexed userId, uint256 itemId, ItemLib.ItemType itemType);
+
+    function registerUser() public {
+        _registerUser(msg.sender);
+    }
+
+    function registerProducer(address _producer, string memory  _name, string memory _country, uint256 _number) public {
+        registerProductOwner(_producer, _name, _country, _number);    
+    }
+    
 
     function recycleItem(string memory _type, uint256 _weight) public { 
         if(!_isRegistered(msg.sender)){
@@ -60,7 +71,7 @@ contract EcoClean is User, Admin, Product {
         emit ItemRecycled(msg.sender, itemCountByUser[id], _type, _weight);
     }
 
-    function payUser(uint256 _id, uint256 _rid, uint256 _rate) public payable {
+    function payUser(uint256 _id, uint256 _rid) public payable {
         makePayment();
         address user = userAccountId[_id].userAddress;
         !_isRegistered(_id);
@@ -73,13 +84,40 @@ contract EcoClean is User, Admin, Product {
         uint256 amount = ItemLib.toItemWeight(itemWeight, rate, _rType);
 
         emit PaidForRecycledItem(user, _id, _rid, _rType);
-        payable(user).transfer(amount * decimal);
-        hasReceivedPayment[_id][_rid] = true;
-        
+        payable(user).transfer(amount * (10 ** decimal));
+        hasReceivedPayment[_id][_rid] = true;   
     }
 
-
     // PRODUCT ENDPOINT OR FUNCTIONS 
+
+    function addProoduct(uint256 _id, string memory _name, bytes memory _data, uint256 _amount) public {
+        if(isProducerRegistered[_id] == false){
+            revert NotAuthorised();
+        }
+        address _owner = productOwner[_id];
+
+        productCount++;
+
+        productCountByUser[_id]++;
+        
+        allProductsByProducer[_id][productCountByUser[_id]] = Products({
+            pId : productCountByUser[_id],
+            name : _name,
+            owner : _owner,
+            data : _data,
+            amount : _amount
+        });
+        productIds.push(productCountByUser[_id]);
+        allProductIdsByProducer[_id] = productIds;   
+    }
+
+    function shopProduct() public {
+
+    }
+
+    function payProducer() public {
+
+    }
 
     
 
