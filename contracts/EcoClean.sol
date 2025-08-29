@@ -54,8 +54,8 @@ contract EcoClean is User, Admin, Product {
         _registerUser(msg.sender);
     }
 
-    function registerProducer(address _producer, string memory  _name, string memory _country, uint256 _number) public {
-        registerProductOwner(_producer, _name, _country, _number);    
+    function registerProducer(string memory  _name, string memory _country, uint256 _number) public {
+        registerProductOwner(msg.sender, _name, _country, _number);    
     }
     
 
@@ -125,15 +125,17 @@ contract EcoClean is User, Admin, Product {
 
     function shopProduct(uint256 _pid) public payable {
         require(_pid > 0, "Invalid product ID");
-        require(validPid[_pid] == false, "No product with that id" );
+        require(validPid[_pid] == true, "No product with that id" );
         uint256 _owner = productIdByOwner[_pid];
         address _producer = productOwner[_owner];
         Products memory product = allProductsByProducer[_owner][_pid]; 
 
-        require(product.productStatus == ProductStatus.Available, "Product is sold out");
+        if(product.productStatus == ProductStatus.Available){
+            revert ProductSoldOut();
+        }
         uint256 amount = product.amount;
         if(msg.value != amount){
-            revert NotAuthorised();
+            revert InsufficientPayment();
         }
         productCount--;
         productCountByOwner[_owner]--;
@@ -146,14 +148,14 @@ contract EcoClean is User, Admin, Product {
 
         product.productStatus = ProductStatus.NotAvailable;
 
+        uint256[] storage activeProduct = productsByProducerId[_pid];
+        for(uint256 i = 0; i < activeProduct.length; i++){
+            if(activeProduct[i] == _pid){
+                activeProduct[i] = activeProduct[activeProduct.length - 1];
+                activeProduct.pop();
+            }
+        }
         payable(_producer).transfer(msg.value);
-
-        
-      
-
-        // Logic for shopping the product
-    }
-
-    
+    }  
     
 }
