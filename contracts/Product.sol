@@ -13,13 +13,13 @@ contract Product {
     }
 
     //registration id 
-    mapping(uint256 => bool) internal isProducerRegistered;
+    mapping(uint256 => bool) public isProducerRegistered;
     //registration id per details 
-    mapping (uint256 => Details) internal ownerDetails;
+    mapping (uint256 => Details) public ownerDetails;
     // check if its the owner of the product by id
-    mapping (uint256 => address) internal productOwner;
+    mapping (uint256 => address) public productOwner;
     //registration Id
-    mapping (address => uint256) internal registrationId;
+    mapping (address => uint256) public registrationId;
 
     event ProductAdded(uint256 indexed id, address owner);
 

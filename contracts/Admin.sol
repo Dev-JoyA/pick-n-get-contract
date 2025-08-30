@@ -11,8 +11,8 @@ contract Admin {
     error NotAuthorised();
     error InValid();
 
-    mapping(address => uint256) adminId;
-    mapping(address => bool ) isRegistered;
+    mapping(address => uint256) public adminId;
+    mapping(address => bool ) public isRegistered;
     mapping(uint256 => address) public idToAdmin;
 
 
