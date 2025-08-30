@@ -27,8 +27,8 @@ contract EcoClean is User, Admin, Product {
         ItemLib.ItemType itemType;
     }
 
-    mapping (address => bool) public isProducerPaid;
-    mapping(uint256 => mapping(uint256 => bool)) public hasUserReceivedPayment;
+    mapping (address => mapping(uint256 => bool)) public isProducerPaidForProduct;
+    mapping (uint256 => mapping(uint256 => bool)) public hasUserReceivedPayment;
 
     mapping (uint256 => mapping (uint256 => RecycledItems)) public itemByUserId;
     mapping (uint256 => bool) public hasRecycled;
@@ -155,7 +155,9 @@ contract EcoClean is User, Admin, Product {
                 activeProduct.pop();
             }
         }
+        require(isProducerPaidForProduct[_producer][_pid] == false, "Already paod producer ");
         payable(_producer).transfer(msg.value);
+        isProducerPaidForProduct[_producer][_pid] == true;
     }  
     
 }
