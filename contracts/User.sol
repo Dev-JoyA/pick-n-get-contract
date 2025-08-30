@@ -12,10 +12,10 @@ contract User{
     }
 
     //used to get userAccount id and address by id
-    mapping (uint256 => UserAccount) internal userAccountId;
+    mapping (uint256 => UserAccount) public userAccountId;
 
     //used to get userAccount id by address
-    mapping (address => uint256) internal userId;
+    mapping (address => uint256) public userId;
     
     error NotFound();
     error UserNotRegistered();
@@ -34,8 +34,7 @@ contract User{
 
         userId[_user] = count;
         
-        users.push(_user);
-        
+        users.push(_user);    
     }
 
     function _isRegistered(uint256 _id) internal view returns(bool){
