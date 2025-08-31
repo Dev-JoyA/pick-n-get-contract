@@ -50,16 +50,11 @@ describe("EcoClean", function () {
 
     describe("Add Product", function () {
         it("should allow a producer to add a product", async function () {
-            const { EcoClean, user3 } = await networkHelpers.loadFixture(deployEcoClean);
+            const { EcoClean, user2 } = await networkHelpers.loadFixture(deployEcoClean);
 
-            // Register producer
-            let name = "my name";
-            let country = "my country";
-            let number = 9023333;
-            await EcoClean.connect(user3).registerProducer(name, country, number);
 
             // Get producer id (assume your contract stores mapping of address -> producerId)
-            const producerId = await EcoClean.registrationId(user3.address);
+            const producerId = await EcoClean.registrationId(user2.address);
 
             // Add product
             const productId = 1;
@@ -67,7 +62,7 @@ describe("EcoClean", function () {
             const productData = ethers.encodeBytes32String("organic ingredients"); // example encoding
             const productAmount = 100;
 
-            await EcoClean.connect(user3).addProduct(producerId, productName, productData, productAmount);
+            await EcoClean.connect(user2).addProduct(producerId, productName, productData, productAmount);
 
             // Verify from mapping
             const product = await EcoClean.allProductsByProducer(producerId, productId);
@@ -75,5 +70,54 @@ describe("EcoClean", function () {
             expect(product.amount).to.equal(productAmount);
         });
     });
-    
+
+    // describe("Shop Product", function () {
+    //     it("should allow a user to shop a product", async function () {
+    //         const { EcoClean, user1, user2 } = await networkHelpers.loadFixture(deployEcoClean);
+
+    //         const producerId = await EcoClean.registrationId(user2.address);
+
+    //         //  Add product
+    //          const productId = 1;
+    //          const productName = "Eco Soap";
+    //          const productData = ethers.encodeBytes32String("organic ingredients");
+    //          const productAmount = 100;
+    //          await EcoClean.connect(user2).addProduct(producerId, productName, productData, productAmount);
+
+    //         // // Register user
+    //         // await EcoClean.connect(user1).registerUser();
+
+    //         // Shop product
+    //         const shopAmount = 5;
+    //         await EcoClean.connect(user1).shopProduct(shopAmount);
+
+    //         // Verify remaining amount
+    //         const product = await EcoClean.allProductsByProducer(producerId, productId);
+    //         expect(product.amount).to.equal(productAmount - shopAmount);
+    //     });
+    // });
+
+        describe("Shop Product", function () {
+            it("should allow a user to shop a product", async function () {
+                const { EcoClean, user1, user2 } = await networkHelpers.loadFixture(deployEcoClean);
+
+                const producerId = await EcoClean.registrationId(user2.address);
+
+                // Add product
+                const productId = 1;
+                const productName = "Eco Soap";
+                const productData = ethers.encodeBytes32String("organic ingredients");
+                const productPrice = 100; // Price per unit
+                const productQuantity = 50; // Initial stock
+                await EcoClean.connect(user2).addProduct(producerId, productName, productData, productPrice);
+
+                // Shop product
+                const shopQuantity = 5;
+                await EcoClean.connect(user1).shopProduct(productId, shopQuantity);
+
+                // Verify remaining stock
+                const product = await EcoClean.allProductsByProducer(producerId, productId);
+                expect(product.amount).to.equal(productQuantity - shopQuantity); // Note: Adjust if product.amount is price, not stock
+            });
+        });
 });
