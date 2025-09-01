@@ -50,7 +50,10 @@ contract User{
     }
 
 
-   function deleteUser(address _user) internal {
+   function _deleteUser(address _user) internal {
+    if(_isRegistered(_user) == false){
+        revert NotFound();
+    }
     for (uint256 i = 0; i < users.length; i++) {
         if (users[i] == _user) {
             users[i] = users[users.length - 1];

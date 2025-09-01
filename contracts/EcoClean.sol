@@ -98,6 +98,26 @@ contract EcoClean is User, Admin, Product {
         hasUserReceivedPayment[_id][_rid] = true;   
     }
 
+    function deleteUserAccount(address _user) public {
+        _deleteUser(_user);
+    }
+
+    function registerAdmin(address _admin) public {
+        _registerAdmin(_admin);
+    }
+
+    function deleteAdmin(address _admin) public {
+        _deleteAdmin(_admin);
+    }
+
+    function deleteAdminById(uint256 _adminId) public {
+        _deleteAdminById(_adminId);
+    }
+
+    function setRate(uint256 _rate) public {
+        _setRate(_rate);
+    }
+
     // PRODUCT ENDPOINT OR FUNCTIONS 
 
     function addProduct(uint256 _id, string memory _name, uint256 _quantity, bytes memory _data, uint256 _amount) public {
