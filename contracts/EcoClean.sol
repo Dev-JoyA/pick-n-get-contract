@@ -15,6 +15,7 @@ contract EcoClean is User, Admin, Product {
     struct Products {
         uint256 productId;
         string name;
+        uint256 quantity;
         address owner;
         bytes data;
         uint256 amount;
@@ -99,7 +100,7 @@ contract EcoClean is User, Admin, Product {
 
     // PRODUCT ENDPOINT OR FUNCTIONS 
 
-    function addProduct(uint256 _id, string memory _name, bytes memory _data, uint256 _amount) public {
+    function addProduct(uint256 _id, string memory _name, uint256 _quantity, bytes memory _data, uint256 _amount) public {
         if(isProducerRegistered[_id] == false){
             revert NotAuthorised();
         }
@@ -112,9 +113,10 @@ contract EcoClean is User, Admin, Product {
         allProductsByProducer[_id][productCountByOwner[_id]] = Products({
             productId : productCountByOwner[_id],
             name : _name,
+            quantity : _quantity,
             owner : _owner,
             data : _data,
-            amount : _amount,
+            amount : _amount * (10**DECIMALS),
             productStatus : ProductStatus.Available
         });
 
@@ -124,94 +126,50 @@ contract EcoClean is User, Admin, Product {
         validPid[productCountByOwner[_id]] = true;  
     }
 
-    // function shopProduct(uint256 _pid) public payable {
-    //     require(_pid > 0, "Invalid product ID");
-    //     require(validPid[_pid] == true, "No product with that id" );
-    //     uint256 _owner = productIdByOwner[_pid];
-    //     address _producer = productOwner[_owner];
-    //     Products memory product = allProductsByProducer[_owner][_pid]; 
-
-    //     if(product.productStatus == ProductStatus.Available){
-    //         revert ProductSoldOut();
-    //     }
-    //     uint256 amount = product.amount;
-    //     if(msg.value != amount){
-    //         revert InsufficientPayment();
-    //     }
-    //     productCount--;
-    //     productCountByOwner[_owner]--;
-    //     for(uint256 i = 0; i < productIds.length; i++){
-    //         if(productIds[i] == _pid){
-    //             productIds[i] = productIds[productIds.length - 1];
-    //             productIds.pop();
-    //         }
-    //     }
-
-    //     product.productStatus = ProductStatus.NotAvailable;
-
-    //     uint256[] storage activeProduct = productsByProducerId[_pid];
-    //     for(uint256 i = 0; i < activeProduct.length; i++){
-    //         if(activeProduct[i] == _pid){
-    //             activeProduct[i] = activeProduct[activeProduct.length - 1];
-    //             activeProduct.pop();
-    //         }
-    //     }
-    //     require(isProducerPaidForProduct[_producer][_pid] == false, "Already paod producer ");
-    //     payable(_producer).transfer(msg.value);
-    //     isProducerPaidForProduct[_producer][_pid] == true;
-    // }  
-
     function shopProduct(uint256 _pid, uint256 _quantity) public payable {
         require(_pid > 0, "Invalid product ID");
-        require(validPid[_pid], "No product with that id");
-        require(_quantity > 0, "Invalid quantity");
+        require(validPid[_pid] == true, "No product with that id" );
+        uint256 _owner = productIdByOwner[_pid];
+        address _producer = productOwner[_owner];
+        Products storage product = allProductsByProducer[_owner][_pid]; 
 
-        uint256 _ownerId = productIdByOwner[_pid];
-        address _producer = productOwner[_ownerId];
-        Products storage product = allProductsByProducer[_ownerId][_pid];
-
-        if (product.productStatus == ProductStatus.NotAvailable) {
+        if(product.productStatus == ProductStatus.NotAvailable){
             revert ProductSoldOut();
         }
-        if (product.amount < _quantity) {
+
+        if (product.quantity < _quantity) {
             revert InsufficientStock();
         }
 
-        // Assume amount is the price per unit, and msg.value should cover _quantity * product.amount
-        // uint256 totalCost = _quantity * product.amount;
-        // if (msg.value < totalCost) {
-        //     revert InsufficientPayment();
-        // }
+        uint256 totalCost = _quantity * product.amount ;
+        require(msg.value == totalCost, "Incorrect payment");
 
-        // Update product stock
-        product.amount -= _quantity;
-        if (product.amount == 0) {
+        productCount--;
+        productCountByOwner[_owner]--;
+        for(uint256 i = 0; i < productIds.length; i++){
+            if(productIds[i] == _pid){
+                productIds[i] = productIds[productIds.length - 1];
+                productIds.pop();
+                break;
+            }
+        }
+
+        product.quantity -= _quantity;
+        if (product.quantity == 0) {
             product.productStatus = ProductStatus.NotAvailable;
-            // Optionally remove from active products
-            uint256[] storage activeProducts = productsByProducerId[_ownerId];
-            for (uint256 i = 0; i < activeProducts.length; i++) {
-                if (activeProducts[i] == _pid) {
-                    activeProducts[i] = activeProducts[activeProducts.length - 1];
-                    activeProducts.pop();
-                    break;
-                }
-            }
-            // Remove from global productIds
-            for (uint256 i = 0; i < productIds.length; i++) {
-                if (productIds[i] == _pid) {
-                    productIds[i] = productIds[productIds.length - 1];
-                    productIds.pop();
-                    break;
-                }
-            }
         }
 
-        // Transfer payment to producer
-        if (isProducerPaidForProduct[_producer][_pid]) {
-            revert AlreadyPaid();
+        uint256[] storage activeProduct = productsByProducerId[_pid];
+        for(uint256 i = 0; i < activeProduct.length; i++){
+            if(activeProduct[i] == _pid){
+                activeProduct[i] = activeProduct[activeProduct.length - 1];
+                activeProduct.pop();
+                break;
+            }
         }
+        require(isProducerPaidForProduct[_producer][_pid] == false, "Already paid producer ");
         payable(_producer).transfer(msg.value);
         isProducerPaidForProduct[_producer][_pid] = true;
-    }
+    }  
     
 }
