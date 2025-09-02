@@ -111,11 +111,32 @@ async function main(): Promise<void> {
 
     await ecoClean.addProduct(pId, productName, quantity, data, productAmount)
 
-    const ownerAddress = await ecoClean.productOwner(pid)
-    console.log("producer address: ", ownerAddress)
+    const ownerAddress = await ecoClean.productOwner(pId)
+    console.log("producer ownner address: ", ownerAddress)
+    console.log("producer address: ", await producer1.getAddress())
+    console.log("product count after adding one product ", await ecoClean.productCount())
+    console.log("product count by owner ", await ecoClean.productCountByOwner(pId))
 
+    // // adding another product and producer
+    // await ecoClean.connect(producer2).registerProducer(producerName,country, producerNumber)
+    // const pId2 = await ecoClean.registrationId(producer2.getAddress())
+    // await ecoClean.addProduct(pId2, productName, 5, data, productAmount)
+    // console.log("product count after adding two product ", await ecoClean.productCount())
+    // console.log("product count by producer 2 ", await ecoClean.productCountByOwner(pId2))
+    // console.log("product count by by producer 1 ", await ecoClean.productCountByOwner(pId))
 
+    // //adding another product for producwe two , to increase his product count
+     await ecoClean.addProduct(pId, "bag", quantity, data, productAmount)
+    // console.log("product count after adding three product ", await ecoClean.productCount())
+    // console.log("product count by producer 2 ", await ecoClean.productCountByOwner(pId2))
+    // console.log("product count by by producer 1 ", await ecoClean.productCountByOwner(pId))
 
+    const allProduct = await ecoClean.allProductsByProducer(pId,2)
+
+    console.log("product by producer 1, with id: ", "products: ", allProduct)
+
+    const status = allProduct.productStatus;
+    console.log("Product status: ", status);
 
 
 

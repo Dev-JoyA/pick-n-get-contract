@@ -20,6 +20,8 @@ contract Product {
     mapping (uint256 => address) public productOwner;
     //registration Id
     mapping (address => uint256) public registrationId;
+    //registration Address
+    mapping (uint256 => address) public registrationAddress;
 
     event ProductAdded(uint256 indexed id, address owner);
 
@@ -43,6 +45,7 @@ contract Product {
 
         isProducerRegistered[registrationCount] = true;
         registrationId[_producer] = registrationCount;
+        registrationAddress[registrationCount] = _producer; 
     }
    
 
