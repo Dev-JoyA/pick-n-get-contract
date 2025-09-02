@@ -78,7 +78,7 @@ contract Admin {
         rate = _rate;
     }
 
-    function makePayment() internal view {
+    function onlyAdmin() internal view {
         _onlyAdmin();
     }    
 

@@ -1,4 +1,5 @@
 import { network } from "hardhat";
+import { pid } from "process";
 
 const { ethers } = await network.connect({
   network: "hardhatOp",
@@ -19,7 +20,7 @@ async function main(): Promise<void> {
     console.log("///////////////// USER FLOW //////////////////////////////")
     
     const tx = await ecoClean.connect(user1).registerUser();
-    const receipt = await tx.wait();
+    await tx.wait();
 
     const user1id = await ecoClean.userId(user1);
     console.log("Is User1 id ", user1id);
@@ -37,6 +38,17 @@ async function main(): Promise<void> {
     const user2iid = await ecoClean.userId(user2);  
     console.log("user2Id after deleting :", user2iid.toString());
 
+    const type = "plastic"
+    const weight = 10
+
+    const recycle = await ecoClean.connect(user1).recycleItem(type, weight)
+    await recycle.wait();
+    const rid  = await ecoClean.recycledItemId(user1id);
+    console.log("recycled item id : ", rid)
+
+    const recycleItem = await ecoClean.itemByUserId(user1id, rid)
+    console.log("recycled item: ", recycleItem)
+
     console.log("///////////////// ADMIN FLOW //////////////////////////////")
 
     await ecoClean.registerAdmin(admin1);
@@ -44,6 +56,71 @@ async function main(): Promise<void> {
     console.log("admin id: ", admin)
     const isAdmin = await ecoClean.isAdminRegistered(admin1.getAddress());
     console.log("is Admin Registered: ", isAdmin)
+
+    await ecoClean.connect(admin1).setRate(2);
+    const rate = await ecoClean.rate();
+    console.log("Current rate: ", rate.toString());
+
+
+    const hasPaid = await ecoClean.hasUserReceivedPayment(user1id,rid)
+    
+    const isReg = await ecoClean.isAdminRegistered(admin1.getAddress())
+    console.log("is reg: ", isReg)
+
+    const fund = await ecoClean.fundContract({
+        value: ethers.parseUnits("50000", 8)
+    })
+
+    await fund.wait()
+    console.log("contract funded")
+    const bal = await ecoClean.connect(admin1).contractBalance()
+    console.log("contract balance: ",bal.toString())
+
+    
+
+    const itemWeight = await ecoClean.itemByUserId(user1id, rid);
+    console.log("Item weight:", itemWeight.toString());
+    const amount = 150
+    console.log("Amount to pay (before decimals):", amount.toString());
+    console.log("Amount to pay (with decimals):", amount * (10 ** 8));
+
+
+    console.log("user receieved payment before : ",hasPaid)
+    await ecoClean.connect(admin1).payUser(user1id, rid);
+    const hasPaid2 = await ecoClean.hasUserReceivedPayment(user1id,rid)
+    console.log("user receieved payment after : ",hasPaid2)
+
+
+    console.log("///////////////// PRODUCER FLOW //////////////////////////////")
+
+    const producerName  = "T_ja"
+    const country = "Nigeria"
+    const producerNumber = 234
+
+    await ecoClean.connect(producer1).registerProducer(producerName,country, producerNumber)
+
+    const pId = await ecoClean.registrationId(producer1.getAddress())
+    console.log("producer registration Id", pId)
+    const p_details = await ecoClean.ownerDetails(pId)
+    console.log("producer details", p_details)
+
+    const productName = "Recycled Paper";
+    const quantity = 10;
+    const data = ethers.toUtf8Bytes("Sample product metadata or description")
+    const productAmount = 5;
+
+    await ecoClean.addProduct(pId, productName, quantity, data, productAmount)
+
+    const ownerAddress = await ecoClean.productOwner(pid)
+    console.log("producer address: ", ownerAddress)
+
+
+
+
+
+
+
+
 
 
     

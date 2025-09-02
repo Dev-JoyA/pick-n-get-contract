@@ -33,7 +33,7 @@ contract EcoClean is User, Admin, Product {
 
     mapping (uint256 => mapping (uint256 => RecycledItems)) public itemByUserId;
     mapping (uint256 => bool) public hasRecycled;
-    mapping (uint256 => uint256) public itemCountByUser;
+    mapping (uint256 => uint256) public recycledItemId;
 
    
     mapping (uint256 => mapping(uint256 => Products)) public  allProductsByProducer;
@@ -56,11 +56,14 @@ contract EcoClean is User, Admin, Product {
         _registerUser(msg.sender);
     }
 
+    function registerAdmin(address _admin) public {
+        _registerAdmin(_admin);
+    }
+
     function registerProducer(string memory  _name, string memory _country, uint256 _number) public {
         registerProductOwner(msg.sender, _name, _country, _number);    
     }
     
-
     function recycleItem(string memory _type, uint256 _weight) public { 
         if(!_isRegistered(msg.sender)){
              _registerUser(msg.sender);
@@ -69,20 +72,21 @@ contract EcoClean is User, Admin, Product {
 
         uint256 id = userId[msg.sender];
 
-        itemCountByUser[id]++;
+        recycledItemId[id]++;
 
-       itemByUserId[id][itemCountByUser[id]] = RecycledItems({
-            itemId: itemCountByUser[id],
+       itemByUserId[id][recycledItemId[id]] = RecycledItems({
+            itemId: recycledItemId[id],
             weight: _weight,
             itemType: _type.toItemType()
         });
 
         hasRecycled[id] = true;
-        emit ItemRecycled(msg.sender, itemCountByUser[id], _type, _weight);
+        hasUserReceivedPayment[id][recycledItemId[id]] = false;
+        emit ItemRecycled(msg.sender, recycledItemId[id], _type, _weight);
     }
 
     function payUser(uint256 _id, uint256 _rid) public payable {
-        makePayment();
+        onlyAdmin();
         address user = userAccountId[_id].userAddress;
         !_isRegistered(_id);
         if(hasUserReceivedPayment[_id][_rid] == true){
@@ -94,16 +98,15 @@ contract EcoClean is User, Admin, Product {
         uint256 amount = ItemLib.toItemWeight(itemWeight, rate, _rType);
 
         emit PaidForRecycledItem(user, _id, _rid, _rType);
-        payable(user).transfer(amount * (10 ** DECIMALS));
+        // payable(user).transfer(amount * (10 ** DECIMALS));
+        (bool success, ) = payable(user).call{value: amount * (10 ** DECIMALS)}("");
+        require(success, "Transfer failed");
+
         hasUserReceivedPayment[_id][_rid] = true;   
     }
 
     function deleteUserAccount(address _user) public {
         _deleteUser(_user);
-    }
-
-    function registerAdmin(address _admin) public {
-        _registerAdmin(_admin);
     }
 
     function deleteAdmin(address _admin) public {
@@ -191,5 +194,18 @@ contract EcoClean is User, Admin, Product {
         payable(_producer).transfer(msg.value);
         isProducerPaidForProduct[_producer][_pid] = true;
     }  
+
+    function fundContract() external payable {
+        require(msg.value > 0, "Must send some HBAR");
+    }
+
+    function contractBalance() external view returns (uint256) {
+        onlyAdmin();
+        return address(this).balance;
+    }
+
+
+    receive() external payable {}
+    fallback() external payable {}
     
 }
