@@ -43,6 +43,8 @@ contract EcoClean is User, Admin, Product {
     mapping (uint256 => uint256) public productCountByOwner;
     mapping (uint256 => bool) public validPid;
     mapping (uint256 => uint256[]) public productsByProducerId;
+    mapping(uint256 => Product) public products;
+
 
     error AlreadyPaid();
     error ProductSoldOut();
@@ -127,7 +129,10 @@ contract EcoClean is User, Admin, Product {
         if(isProducerRegistered[_id] == false){
             revert NotAuthorised();
         }
-        address _owner = productOwner[_id];
+    
+        address _owner = registrationAddress[_id];
+
+        productOwner[_id] = _owner;
 
         productCount++;
 
