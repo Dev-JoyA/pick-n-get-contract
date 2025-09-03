@@ -43,7 +43,7 @@ contract EcoClean is User, Admin, Product {
     mapping (uint256 => uint256) public productCountByOwner;
     mapping (uint256 => bool) public validPid;
     mapping (uint256 => uint256[]) public productsByProducerId;
-    mapping(uint256 => Product) public products;
+    mapping(uint256 => Products) public products;
 
 
     error AlreadyPaid();
@@ -152,6 +152,16 @@ contract EcoClean is User, Admin, Product {
         productIdByOwner[productCountByOwner[_id]] = _id;
         productsByProducerId[_id] = productIds; 
         validPid[productCountByOwner[_id]] = true;  
+        products[productCountByOwner[_id]] = Products({
+            productId : productCountByOwner[_id],
+            name : _name,
+            quantity : _quantity,
+            owner : _owner,
+            data : _data,
+            amount : _amount * (10**DECIMALS),
+            productStatus : ProductStatus.Available
+        });
+
     }
 
     function shopProduct(uint256 _pid, uint256 _quantity) public payable {
@@ -187,7 +197,7 @@ contract EcoClean is User, Admin, Product {
             product.productStatus = ProductStatus.NotAvailable;
         }
 
-        uint256[] storage activeProduct = productsByProducerId[_pid];
+        uint256[] storage activeProduct = productsByProducerId[_owner];
         for(uint256 i = 0; i < activeProduct.length; i++){
             if(activeProduct[i] == _pid){
                 activeProduct[i] = activeProduct[activeProduct.length - 1];
