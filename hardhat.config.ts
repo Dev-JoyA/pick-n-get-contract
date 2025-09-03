@@ -1,27 +1,36 @@
 import type { HardhatUserConfig } from "hardhat/config";
-
+import hardhatVerify from "@nomicfoundation/hardhat-verify";
 import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
 import { configVariable } from "hardhat/config";
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatToolboxMochaEthersPlugin],
-  solidity: {
+  plugins: [hardhatToolboxMochaEthersPlugin,
+  hardhatVerify,
+  ],
+    solidity: {
     profiles: {
       default: {
-        version: "0.8.28",
+        version: "0.8.28"
       },
       production: {
         version: "0.8.28",
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
-          },
-        },
-      },
-    },
+            runs: 200
+          }
+        }
+      }
+    }
   },
+  
   networks: {
+    testnet: {
+      type : "http",
+      url: configVariable("HEDERA_TESTNET_RPC_URL"),
+      accounts: [configVariable("HEDERA_TESTNET_PRIVATE_KEY")],
+      chainId: 296
+    },
     hardhatMainnet: {
       type: "edr-simulated",
       chainType: "l1",
@@ -37,6 +46,13 @@ const config: HardhatUserConfig = {
       accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
     },
   },
+
+  verify: {
+    etherscan: {
+      apiKey: configVariable("ETHERSCAN_API_KEY")
+    }
+    
+  }
 };
 
 export default config;
