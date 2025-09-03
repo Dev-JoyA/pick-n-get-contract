@@ -53,5 +53,11 @@ npx hardhat keystore set SEPOLIA_PRIVATE_KEY
 After setting the variable, you can run the deployment with the Sepolia network:
 
 ```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
+npx hardhat ignition deploy --network testnet ignition/modules/EcoClean.ts
+```
+
+```shell
+Deployed Addresses:
+
+EcoCleanModule#EcoClean - 0x2f15f1b055903a1A07b9b08F6540ea633921Ea77
 ```
