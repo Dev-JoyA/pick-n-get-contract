@@ -59,13 +59,31 @@ npx hardhat ignition deploy --network testnet ignition/modules/EcoClean.ts
 ```
 
 ```shell
-Deployed Addresses:
+Deployed txn hash:
 
-EcoCleanModule#EcoClean - 0x2f15f1b055903a1A07b9b08F6540ea633921Ea77
+EcoCleanModule#EcoClean - 0x6b5920701d9e2e000cb5878d2b77e824f7bb5416df4841228cc076979e03aa86
 ```
+
+## contract address
+```shell
+contract deployed to: 0x31ea9439e30340d08C34924a1eE9D9C57Dd7d8F8
+```
+
+```shell
+See details in hashscan : 
+ https://hashscan.io/testnet/address/0x31ea9439e30340d08C34924a1eE9D9C57Dd7d8F8 
+ ```
+
 
 ## command to get the metadata
 ```shell
 solc --bin --abi --metadata -o ./contracts ./contracts/EcoClean.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol
 ```
+
+## contract abi
+```shell
+https://hashscan.io/testnet/contract/0.0.6761805/abi
+```
+
+
 
