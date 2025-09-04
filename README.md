@@ -52,6 +52,8 @@ npx hardhat keystore set SEPOLIA_PRIVATE_KEY
 
 After setting the variable, you can run the deployment with the Sepolia network:
 
+## command to deploy the contract
+
 ```shell
 npx hardhat ignition deploy --network testnet ignition/modules/EcoClean.ts
 ```
@@ -61,3 +63,9 @@ Deployed Addresses:
 
 EcoCleanModule#EcoClean - 0x2f15f1b055903a1A07b9b08F6540ea633921Ea77
 ```
+
+## command to get the metadata
+```shell
+solc --bin --abi --metadata -o ./contracts ./contracts/EcoClean.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol
+```
+
