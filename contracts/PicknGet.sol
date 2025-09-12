@@ -13,7 +13,6 @@ contract PicknGet is User, Admin, Product {
 
     enum ProductStatus {Available, NotAvailable}
     enum ItemStatus {Pending_Confirmation, Confirmed, Sold, Paid}
-    enum PickUpStatus {Pending , InTransit, PickedUp, Delivered, Cancelled}
     enum RiderStatus {Pending, Approved, Rejected, Banned}
 
     struct Products {
@@ -31,6 +30,8 @@ contract PicknGet is User, Admin, Product {
         uint256 weight;
         ItemLib.ItemType itemType;
         ItemStatus itemStatus;
+        string description;
+        bytes image;
     }
 
     struct RiderDetails {
@@ -43,19 +44,6 @@ contract PicknGet is User, Admin, Product {
         RiderStatus riderStatus;
         bytes vehicleImage;
         bytes vehicleRegistrationImage;
-    }
-
-    struct PickUpDetails {
-        uint256 pickUpId;
-        uint256 userId;
-        uint256 itemId;
-        uint256 riderId;
-        string pickUpAddress;
-        string riderName;
-        uint8 riderPhoneNumber;
-        uint8 userPhoneNumber;
-        string userName;
-        PickUpStatus pickUpStatus;
     }
 
     mapping (address => mapping(uint256 => bool)) public isProducerPaidForProduct;
@@ -142,7 +130,7 @@ contract PicknGet is User, Admin, Product {
         validRider[_riderId] = false;
     }
     
-    function recycleItem(string memory _type, uint256 _weight) public { 
+    function recycleItem(string memory _type, uint256 _weight, string memory _description, bytes memory _data) public { 
         if(!_isRegistered(msg.sender)){
             revert UserNotRegistered();
         }
@@ -156,7 +144,9 @@ contract PicknGet is User, Admin, Product {
             itemId: recycledItemId[id],
             weight: _weight,
             itemType: _type.toItemType(),
-            itemStatus : ItemStatus.Pending_Confirmation
+            itemStatus : ItemStatus.Pending_Confirmation,
+            description: _description,
+            image: _data
         });
 
         hasRecycled[id] = true;
@@ -189,7 +179,8 @@ contract PicknGet is User, Admin, Product {
 
         uint256 itemWeight = itemByUserId[_userId][_recycledItemId].weight;
         ItemLib.ItemType _rType= itemByUserId[_userId][_recycledItemId].itemType;
-        uint256 amount = ItemLib.toItemWeight(itemWeight, rate, _rType);
+        uint256 rate = rates[_rType];
+        uint256 amount = itemWeight * rate;
 
         emit PaidForRecycledItem(user, _userId, _recycledItemId, _rType);
         // payable(user).transfer(amount * (10 ** DECIMALS));
@@ -211,8 +202,8 @@ contract PicknGet is User, Admin, Product {
         _deleteAdminById(_adminId);
     }
 
-    function setRate(uint256 _rate) public {
-        _setRate(_rate);
+    function setRate(ItemLib.ItemType _type, uint256 _rate) public {
+        _setRate(_type, _rate);
     }
 
     // PRODUCT ENDPOINT OR FUNCTIONS 

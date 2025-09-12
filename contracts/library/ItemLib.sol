@@ -25,24 +25,4 @@ library ItemLib {
             return ItemType.OTHERS;
         }
     }
-
-    function toItemWeight(uint256 _weight, uint256 _rate, ItemType _type) internal pure returns (uint256){
-        if(_weight < 5){
-            return 0;
-        }
-
-        if(_type == ItemType.PAPER){
-            return (_weight * _rate);
-        }else if(_type == ItemType.GLASS){
-            return ((_weight * _rate) / 2 );
-        }else if(_type == ItemType.METALS){
-            return ((_weight * _rate) * 3);
-        }else if(_type == ItemType.PLASTIC){
-            return ((_weight * _rate) * 2);
-        }else if(_type == ItemType.OTHERS){
-            return ((_weight * _rate) / 3);
-        }else {
-            return 0;
-        }
-    }
 }

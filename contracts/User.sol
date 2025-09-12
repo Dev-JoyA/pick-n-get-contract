@@ -13,7 +13,7 @@ contract User{
         uint8 phoneNumber;
     }
 
-    //used to get userAccount id and address by id
+    //used to get userADetails id and address by id
     mapping (uint256 => UserDetils) public userAccountId;
 
     //used to get userAccount id by address
