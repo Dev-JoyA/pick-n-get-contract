@@ -6,7 +6,11 @@
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
+    "declaration": true,
+    "declarationMap": true,
     "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
     "moduleResolution": "node16",
     "outDir": "dist"
   }
