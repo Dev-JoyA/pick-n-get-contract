@@ -3,10 +3,10 @@ pragma solidity ^0.8.28;
 
 
 contract Admin { 
-
     address[] admins;
     uint256 count;
     uint256 public rate;
+    address constant public SUPER_ADMIN = 0x71d9edF4D3E671274852a992ab331A8f4775b3F9;
 
     error NotAuthorised();
     error InValid();
@@ -24,6 +24,7 @@ contract Admin {
     }
 
     function _registerAdmin(address _admin) internal {
+        require(msg.sender == SUPER_ADMIN, "Only Super Admin can add Admin");
         if(_admin == address(0)){
             revert InValid();
         }
@@ -37,7 +38,8 @@ contract Admin {
     }
 
     function _deleteAdmin(address _admin) internal {
-        _onlyAdmin();
+        require(msg.sender == SUPER_ADMIN, "Only Super Admin can add Admin");
+        require(isAdminRegistered[_admin], "Not Registered");
         for(uint256 i = 0; i < admins.length; i++){
             if(admins[i] == _admin){
                 admins[i] = admins[admins.length - 1];
@@ -54,7 +56,7 @@ contract Admin {
     }
 
     function _deleteAdminById(uint256 id) internal {
-    _onlyAdmin();
+    require(msg.sender == SUPER_ADMIN, "Only Super Admin can add Admin");
 
     address _admin = idToAdmin[id]; 
     require(_admin != address(0), "Invalid ID");

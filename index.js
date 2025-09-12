@@ -13,7 +13,6 @@ const bytecode = fs.readFileSync("./contracts/EcoClean.bin").toString();
 
 const network = "testnet";
 const explorerURL = `https://hashscan.io/${network}`;
-const VERIFY_URL = `https://api.hashscan.io/${network}/verify`
 
 const provider = new ethers.JsonRpcProvider(`https://${network}.hashio.io/api`);
 const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);

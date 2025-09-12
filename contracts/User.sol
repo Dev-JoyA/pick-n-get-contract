@@ -6,13 +6,15 @@ contract User{
     address[] private users;
     uint256 private count;
 
-    struct UserAccount {
+    struct UserDetils {
         uint256 id;
         address userAddress;
+        string homeAddress;
+        uint8 phoneNumber;
     }
 
     //used to get userAccount id and address by id
-    mapping (uint256 => UserAccount) public userAccountId;
+    mapping (uint256 => UserDetils) public userAccountId;
 
     //used to get userAccount id by address
     mapping (address => uint256) public userId;
@@ -20,21 +22,24 @@ contract User{
     error NotFound();
     error UserNotRegistered();
    
-    function _registerUser(address _user) internal {
-        if(_user == address(0)){
+    function _registerUser(string memory _address, uint8 _number) internal {
+        if(msg.sender == address(0)){
             revert NotFound();
         }
-        require(userId[_user] == 0, "user already have an id");
+        require(userId[msg.sender] == 0, "user already have an id");
 
         count++;
-        userAccountId[count] = UserAccount({
+        userAccountId[count] = UserDetils({
             id : count,
-            userAddress : _user
+            userAddress : msg.sender,
+            homeAddress : _address,
+            phoneNumber : _number
+
         });
 
-        userId[_user] = count;
+        userId[msg.sender] = count;
         
-        users.push(_user);    
+        users.push(msg.sender);    
     }
 
     function _isRegistered(uint256 _id) internal view returns(bool){
