@@ -6,7 +6,7 @@ import "./Product.sol";
 import "./User.sol";
 import "./library/ItemLib.sol";
 
-contract EcoClean is User, Admin, Product {
+contract PicknGet is User, Admin, Product {
     using ItemLib for string;
     uint8 constant DECIMALS = 8;
     uint256 public riderCount;
@@ -43,7 +43,7 @@ contract EcoClean is User, Admin, Product {
         RiderStatus riderStatus;
         bytes vehicleImage;
         bytes vehicleRegistrationImage;
-  }
+    }
 
     struct PickUpDetails {
         uint256 pickUpId;
