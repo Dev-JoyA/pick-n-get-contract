@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
+import "./library/ItemLib.sol";
 
 
 contract Admin { 
+    using ItemLib for string;
+
     address[] admins;
     uint256 count;
-    uint256 public rate;
     address constant public SUPER_ADMIN = 0x71d9edF4D3E671274852a992ab331A8f4775b3F9;
 
     error NotAuthorised();
@@ -14,6 +16,7 @@ contract Admin {
     mapping(address => uint256) public adminId;
     mapping(address => bool ) public isAdminRegistered;
     mapping(uint256 => address) public idToAdmin;
+    mapping(ItemLib.ItemType => uint256) public rates;
 
 
     function _onlyAdmin() private view {
@@ -56,28 +59,28 @@ contract Admin {
     }
 
     function _deleteAdminById(uint256 id) internal {
-    require(msg.sender == SUPER_ADMIN, "Only Super Admin can add Admin");
+        require(msg.sender == SUPER_ADMIN, "Only Super Admin can add Admin");
 
-    address _admin = idToAdmin[id]; 
-    require(_admin != address(0), "Invalid ID");
+        address _admin = idToAdmin[id]; 
+        require(_admin != address(0), "Invalid ID");
 
-    for(uint256 i = 0; i < admins.length; i++){
-        if(admins[i] == _admin){
-            admins[i] = admins[admins.length - 1];
-            admins.pop();
+        for(uint256 i = 0; i < admins.length; i++){
+            if(admins[i] == _admin){
+                admins[i] = admins[admins.length - 1];
+                admins.pop();
 
-            delete adminId[_admin];
-            delete idToAdmin[id];   
-            isAdminRegistered[_admin] = false;
-            break;
+                delete adminId[_admin];
+                delete idToAdmin[id];   
+                isAdminRegistered[_admin] = false;
+                break;
+            }
         }
     }
-}
 
 
-    function _setRate(uint256 _rate) internal{
+    function _setRate(ItemLib.ItemType _type,uint256 _rate) internal{
         _onlyAdmin();
-        rate = _rate;
+        rates[_type] = _rate;
     }
 
     function onlyAdmin() internal view {
