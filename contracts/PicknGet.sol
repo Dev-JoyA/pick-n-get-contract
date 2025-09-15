@@ -43,6 +43,7 @@ contract PicknGet is User, Admin, Product {
         address walletAddress;
         string homeAddress;
         RiderStatus riderStatus;
+        string country;
         bytes vehicleImage;
         bytes vehicleRegistrationImage;
         VehicleType vehicleType;
@@ -102,6 +103,7 @@ contract PicknGet is User, Admin, Product {
                               uint8 _number, 
                               string memory _vehicleNumber,
                               string memory _homeAddress,
+                              string memory _country,
                               bytes memory _image,
                               bytes memory _vehicleRegistration,
                               VehicleType _vehicleType
@@ -117,6 +119,7 @@ contract PicknGet is User, Admin, Product {
             walletAddress : msg.sender,
             homeAddress : _homeAddress,
             riderStatus : RiderStatus.Pending,
+            country : _country, 
             vehicleImage : _image,
             vehicleRegistrationImage : _vehicleRegistration,
             vehicleType : _vehicleType
