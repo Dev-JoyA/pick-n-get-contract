@@ -14,6 +14,7 @@ contract PicknGet is User, Admin, Product {
     enum ProductStatus {Available, NotAvailable}
     enum ItemStatus {Pending_Confirmation, Confirmed, Sold, Paid}
     enum RiderStatus {Pending, Approved, Rejected, Banned}
+    enum VehicleType {Bike, Car, Truck, Van}
 
     struct Products {
         uint256 productId;
@@ -42,8 +43,10 @@ contract PicknGet is User, Admin, Product {
         address walletAddress;
         string homeAddress;
         RiderStatus riderStatus;
+        string country;
         bytes vehicleImage;
         bytes vehicleRegistrationImage;
+        VehicleType vehicleType;
     }
 
     mapping (address => mapping(uint256 => bool)) public isProducerPaidForProduct;
@@ -77,10 +80,16 @@ contract PicknGet is User, Admin, Product {
 
     event ItemRecycled(address indexed user, uint256 itemId, string itemType, uint256 weight);
     event PaidForRecycledItem(address indexed user, uint256 indexed userId, uint256 itemId, ItemLib.ItemType itemType);
+    event RiderApproved(uint256 indexed riderId, string _name, 
+                              uint8 _number, 
+                              string  _vehicleNumber,
+                              bytes  _image,
+                              string _country,
+                              VehicleType _vehicleType);
 
 
-    function registerUser(string memory _address, uint8 _number) public {
-        _registerUser( _address, _number);
+    function registerUser(string memory _address, uint8 _number, string memory _name) public {
+        _registerUser( _address, _number, _name);
     }
 
     function registerAdmin(address _admin) public {
@@ -95,8 +104,10 @@ contract PicknGet is User, Admin, Product {
                               uint8 _number, 
                               string memory _vehicleNumber,
                               string memory _homeAddress,
+                              string memory _country,
                               bytes memory _image,
-                              bytes memory _vehicleRegistration
+                              bytes memory _vehicleRegistration,
+                              VehicleType _vehicleType
                               ) public 
         {
         require(riderId[riderCount].id == 0, "Already registered");
@@ -109,8 +120,10 @@ contract PicknGet is User, Admin, Product {
             walletAddress : msg.sender,
             homeAddress : _homeAddress,
             riderStatus : RiderStatus.Pending,
+            country : _country, 
             vehicleImage : _image,
-            vehicleRegistrationImage : _vehicleRegistration
+            vehicleRegistrationImage : _vehicleRegistration,
+            vehicleType : _vehicleType
         }); 
     }
 
@@ -120,6 +133,7 @@ contract PicknGet is User, Admin, Product {
         require(riderId[_riderId].riderStatus == RiderStatus.Rejected, "Rider is Rejected, needs to re-apply");
         riderId[_riderId].riderStatus = RiderStatus.Approved;
         validRider[_riderId] = true;
+        emit RiderApproved(_riderId, riderId[_riderId].name, riderId[_riderId].phoneNumber, riderId[_riderId].vehicleNumber, riderId[_riderId].vehicleImage, riderId[_riderId].country, riderId[_riderId].vehicleType);
     }
 
     function banRider(uint256 _riderId) public {
