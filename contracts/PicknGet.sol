@@ -84,11 +84,12 @@ contract PicknGet is User, Admin, Product {
                               uint8 _number, 
                               string  _vehicleNumber,
                               bytes  _image,
+                              string _country,
                               VehicleType _vehicleType);
 
 
-    function registerUser(string memory _address, uint8 _number) public {
-        _registerUser( _address, _number);
+    function registerUser(string memory _address, uint8 _number, string memory _name) public {
+        _registerUser( _address, _number, _name);
     }
 
     function registerAdmin(address _admin) public {
@@ -132,7 +133,7 @@ contract PicknGet is User, Admin, Product {
         require(riderId[_riderId].riderStatus == RiderStatus.Rejected, "Rider is Rejected, needs to re-apply");
         riderId[_riderId].riderStatus = RiderStatus.Approved;
         validRider[_riderId] = true;
-        emit RiderApproved(_riderId, riderId[_riderId].name, riderId[_riderId].phoneNumber, riderId[_riderId].vehicleNumber, riderId[_riderId].vehicleImage, riderId[_riderId].vehicleType);
+        emit RiderApproved(_riderId, riderId[_riderId].name, riderId[_riderId].phoneNumber, riderId[_riderId].vehicleNumber, riderId[_riderId].vehicleImage, riderId[_riderId].country, riderId[_riderId].vehicleType);
     }
 
     function banRider(uint256 _riderId) public {
