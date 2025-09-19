@@ -8,16 +8,16 @@ require("dotenv").config();
 import { ethers} from "ethers";
 import fs from "fs";
 
-const abi = fs.readFileSync("./contracts/EcoClean.abi").toString();
-const bytecode = fs.readFileSync("./contracts/EcoClean.bin").toString();
+const abi = fs.readFileSync("./contracts/PicknGet.abi").toString();
+const bytecode = fs.readFileSync("./contracts/PicknGet.bin").toString();
 
 const network = "testnet";
 const explorerURL = `https://hashscan.io/${network}`;
 
 const provider = new ethers.JsonRpcProvider(`https://${network}.hashio.io/api`);
 const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-const metadata = fs.readFileSync("./artifacts/contracts/EcoClean.sol/EcoClean.json", "utf8");
-const source = fs.readFileSync("./contracts/EcoClean.sol", "utf8");
+const metadata = fs.readFileSync("./artifacts/contracts/PicknGet.sol/PicknGet.json", "utf8");
+const source = fs.readFileSync("./contracts/PicknGet.sol", "utf8");
 
 async function main() {
     console.log("Deploying contract...");
@@ -34,10 +34,10 @@ async function main() {
     chain: "296", 
     files: {
       "metadata.json": metadata,
-      "EcoClean.sol": source
+      "PicknGet.sol": source
     },
     creatorTxHash: deployTxHash,
-    chosenContract: "EcoClean"
+    chosenContract: "PicknGet"
   };
 
     console.log(`Contract deployed to: ${contractAddress}\n`);
