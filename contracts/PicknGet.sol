@@ -11,21 +11,11 @@ contract PicknGet is User, Admin, Product {
     uint8 constant DECIMALS = 8;
     uint256 public riderCount;
 
-    enum ProductStatus {Available, NotAvailable}
     enum ItemStatus {Pending_Confirmation, Confirmed, Sold, Paid}
     enum RiderStatus {Pending, Approved, Rejected, Banned}
     enum VehicleType {Bike, Car, Truck, Van}
 
-    struct Products {
-        uint256 productId;
-        string name;
-        uint256 quantity;
-        address owner;
-        bytes data;
-        uint256 amount;
-        ProductStatus productStatus;
-    }
-
+   
     struct RecycledItems{
         uint256 itemId;
         uint256 weight;
@@ -44,38 +34,29 @@ contract PicknGet is User, Admin, Product {
         string homeAddress;
         RiderStatus riderStatus;
         string country;
+        uint256 capacity;
         bytes vehicleImage;
         bytes vehicleRegistrationImage;
         VehicleType vehicleType;
     }
-
-    mapping (address => mapping(uint256 => bool)) public isProducerPaidForProduct;
+    // user id to recycleid mapping
     mapping (uint256 => mapping(uint256 => bool)) public hasUserReceivedPayment;
 
+    //userId mapped to itemId and items 
     mapping (uint256 => mapping (uint256 => RecycledItems)) public itemByUserId;
     mapping (uint256 => bool) public hasRecycled;
     mapping (uint256 => uint256) public recycledItemId;
-
-   
-    mapping (uint256 => mapping(uint256 => Products)) public  allProductsByProducer;
-    //used for looking up a producer by his id;
-    mapping (uint256 => uint256) public productIdByOwner;
-    //producer id to number of product they have used for giving givingg id to a specific producer
-    mapping (uint256 => uint256) public productCountByOwner;
-    mapping (uint256 => bool) public validPid;
-    mapping (uint256 => uint256[]) public productsByProducerId;
-    mapping (uint256 => Products) public products;
-
+    //userId to weight
+    mapping (uint256 => uint256) public totalRecycleddByUser;
+    // userId to amount
+    mapping (uint256 => uint256) public totalEarned;
 
     mapping (uint256 => RiderDetails) public riderId;
     mapping (uint256 => bool) public validRider;
 
-
     error AlreadyPaid();
-    error ProductSoldOut();
     error NoRecycleItem();
     error InsufficientPayment();
-    error InsufficientStock();
     error NotConfirmed();
 
     event ItemRecycled(address indexed user, uint256 itemId, string itemType, uint256 weight);
@@ -105,6 +86,7 @@ contract PicknGet is User, Admin, Product {
                               string memory _vehicleNumber,
                               string memory _homeAddress,
                               string memory _country,
+                              uint256 _capacity,
                               bytes memory _image,
                               bytes memory _vehicleRegistration,
                               VehicleType _vehicleType
@@ -121,6 +103,7 @@ contract PicknGet is User, Admin, Product {
             homeAddress : _homeAddress,
             riderStatus : RiderStatus.Pending,
             country : _country, 
+            capacity : _capacity,
             vehicleImage : _image,
             vehicleRegistrationImage : _vehicleRegistration,
             vehicleType : _vehicleType
@@ -129,8 +112,12 @@ contract PicknGet is User, Admin, Product {
 
     function approveRider(uint256 _riderId) public {
         onlyAdmin();
-        require(riderId[_riderId].id == _riderId,"Rider does not exist with that Id");
-        require(riderId[_riderId].riderStatus == RiderStatus.Rejected, "Rider is Rejected, needs to re-apply");
+        if(riderId[_riderId].id == _riderId){
+            revert ("Rider does not exist with that Id");
+        }
+        if(riderId[_riderId].riderStatus == RiderStatus.Rejected){
+            revert ("Rider is Rejected, needs to re-apply");
+        }
         riderId[_riderId].riderStatus = RiderStatus.Approved;
         validRider[_riderId] = true;
         emit RiderApproved(_riderId, riderId[_riderId].name, riderId[_riderId].phoneNumber, riderId[_riderId].vehicleNumber, riderId[_riderId].vehicleImage, riderId[_riderId].country, riderId[_riderId].vehicleType);
@@ -138,8 +125,12 @@ contract PicknGet is User, Admin, Product {
 
     function banRider(uint256 _riderId) public {
         onlyAdmin();
-        require(riderId[_riderId].id == _riderId,"Rider does not exist with that Id");
-        require(riderId[_riderId].riderStatus == RiderStatus.Rejected, "Rider is Rejected, needs to re-apply");
+        if(riderId[_riderId].id == _riderId){
+            revert ("Rider does not exist with that Id");
+        }
+        if(riderId[_riderId].riderStatus == RiderStatus.Rejected){
+            revert ("Rider is Rejected, needs to re-apply");
+        }
         riderId[_riderId].riderStatus = RiderStatus.Banned;
         validRider[_riderId] = false;
     }
@@ -165,6 +156,7 @@ contract PicknGet is User, Admin, Product {
 
         hasRecycled[id] = true;
         hasUserReceivedPayment[id][recycledItemId[id]] = false;
+        totalRecycleddByUser[id] += _weight;
         emit ItemRecycled(msg.sender, recycledItemId[id], _type, _weight);
     }
 
@@ -200,7 +192,7 @@ contract PicknGet is User, Admin, Product {
         // payable(user).transfer(amount * (10 ** DECIMALS));
         (bool success, ) = payable(user).call{value: amount * (10 ** DECIMALS)}("");
         require(success, "Transfer failed");
-
+        totalEarned[_userId] += amount;
         hasUserReceivedPayment[_userId][_recycledItemId] = true;   
     }
 
@@ -219,94 +211,7 @@ contract PicknGet is User, Admin, Product {
     function setRate(ItemLib.ItemType _type, uint256 _rate) public {
         _setRate(_type, _rate);
     }
-
-    // PRODUCT ENDPOINT OR FUNCTIONS 
-
-    function addProduct(uint256 _id, string memory _name, uint256 _quantity, bytes memory _data, uint256 _amount) public {
-        if(isProducerRegistered[_id] == false){
-            revert NotAuthorised();
-        }
-    
-        address _owner = registrationAddress[_id];
-
-        productOwner[_id] = _owner;
-
-        productCount++;
-
-        productCountByOwner[_id]++;
-        
-        allProductsByProducer[_id][productCountByOwner[_id]] = Products({
-            productId : productCountByOwner[_id],
-            name : _name,
-            quantity : _quantity,
-            owner : _owner,
-            data : _data,
-            amount : _amount * (10**DECIMALS),
-            productStatus : ProductStatus.Available
-        });
-
-        productIds.push(productCountByOwner[_id]);
-        productIdByOwner[productCountByOwner[_id]] = _id;
-        productsByProducerId[_id] = productIds; 
-        validPid[productCountByOwner[_id]] = true;  
-        products[productCountByOwner[_id]] = Products({
-            productId : productCountByOwner[_id],
-            name : _name,
-            quantity : _quantity,
-            owner : _owner,
-            data : _data,
-            amount : _amount * (10**DECIMALS),
-            productStatus : ProductStatus.Available
-        });
-
-    }
-
-    function shopProduct(uint256 _pid, uint256 _quantity) public payable {
-        require(_pid > 0, "Invalid product ID");
-        require(validPid[_pid] == true, "No product with that id" );
-        uint256 _owner = productIdByOwner[_pid];
-        address _producer = productOwner[_owner];
-        Products storage product = allProductsByProducer[_owner][_pid]; 
-
-        if(product.productStatus == ProductStatus.NotAvailable){
-            revert ProductSoldOut();
-        }
-
-        if (product.quantity < _quantity) {
-            revert InsufficientStock();
-        }
-
-        uint256 totalCost = _quantity * product.amount ;
-        require(msg.value == totalCost, "Incorrect payment");
-
-        productCount--;
-        productCountByOwner[_owner]--;
-        for(uint256 i = 0; i < productIds.length; i++){
-            if(productIds[i] == _pid){
-                productIds[i] = productIds[productIds.length - 1];
-                productIds.pop();
-                break;
-            }
-        }
-
-        product.quantity -= _quantity;
-        if (product.quantity == 0) {
-            product.productStatus = ProductStatus.NotAvailable;
-        }
-
-        uint256[] storage activeProduct = productsByProducerId[_owner];
-        for(uint256 i = 0; i < activeProduct.length; i++){
-            if(activeProduct[i] == _pid){
-                activeProduct[i] = activeProduct[activeProduct.length - 1];
-                activeProduct.pop();
-                break;
-            }
-        }
-        require(isProducerPaidForProduct[_producer][_pid] == false, "Already paid producer ");
-        payable(_producer).transfer(msg.value);
-        isProducerPaidForProduct[_producer][_pid] = true;
-    }  
-
+ 
     function fundContract() external payable {
         require(msg.value > 0, "Must send some HBAR");
     }
@@ -316,8 +221,6 @@ contract PicknGet is User, Admin, Product {
         return address(this).balance;
     }
 
-
     receive() external payable {}
-    fallback() external payable {}
-    
+    fallback() external payable {}    
 }
