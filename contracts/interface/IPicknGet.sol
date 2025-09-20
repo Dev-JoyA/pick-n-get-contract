@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
-interface IEcoClean
+enum VehicleType { Bike, Car, Truck, Van }
+
+interface IPicknGet
  {
    event ItemRecycled(address indexed user, uint256 itemId, string itemType, uint256 weight);
 
@@ -10,6 +12,21 @@ interface IEcoClean
     function registerAdmin(address _admin) external;
 
     function registerProducer(string memory  _name, string memory _country, uint256 _number) external ;
+
+     function riderApplication(string memory _name, 
+                              uint8 _number, 
+                              string memory _vehicleNumber,
+                              string memory _homeAddress,
+                              string memory _country,
+                              uint256 _capacity,
+                              bytes memory _image,
+                              bytes memory _vehicleRegistration,
+                              VehicleType _vehicleType
+                              ) external ;
+
+    function approveRider(uint256 _riderId) external ;
+
+    function banRider(uint256 _riderId) external ;
     
     function recycleItem(string memory _type, uint256 _weight) external ;
 
