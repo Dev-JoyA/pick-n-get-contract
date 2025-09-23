@@ -14,11 +14,12 @@ contract Product {
         uint256 phoneNumber;
     }
 
-     struct Products {
+    struct Products {
         uint256 productId;
         string name;
         uint256 quantity;
         address owner;
+        string description;
         bytes data;
         uint256 amount;
         ProductStatus productStatus;
@@ -79,7 +80,7 @@ contract Product {
         return productOwner[_id];
     }
 
-    function _addProducts(uint256 _id, string memory _name, uint256 _quantity, bytes memory _data, uint256 _amount, uint8 _decimals) public {
+    function _addProducts(uint256 _id, string memory _name, uint256 _quantity, string memory _description, bytes memory _data, uint256 _amount, uint8 _decimals) public {
           if(isProducerRegistered[_id] == false){
             revert ("Not Authorized");
         }
@@ -97,6 +98,7 @@ contract Product {
             name : _name,
             quantity : _quantity,
             owner : _owner,
+            description : _description,
             data : _data,
             amount : _amount * (10**_decimals),
             productStatus : ProductStatus.Available
@@ -111,6 +113,7 @@ contract Product {
             name : _name,
             quantity : _quantity,
             owner : _owner,
+            description : _description,
             data : _data,
             amount : _amount * (10**_decimals),
             productStatus : ProductStatus.Available
