@@ -78,7 +78,7 @@ contract Admin {
     }
 
 
-    function _setRate(ItemLib.ItemType _type,uint256 _rate) internal{
+    function _setRate(ItemLib.ItemType _type, uint256 _rate) internal{
         _onlyAdmin();
         rates[_type] = _rate;
     }
