@@ -16,23 +16,28 @@ npx hardhat ignition deploy --network testnet ignition/modules/PicknGet.ts
 Deployed txn hash:
 
 PicknGetModule#PicknGet - 
-0x74a406a021fb60adb39ca903488b9a2798af8aedadc260e5ce66f50afc735ce1
+0x52bfaacd9c3c655700ba1800b2a3e9f6b6c9eba442d081b75b6c8051cc825aa8
 ```
 
 ## contract address
 ```shell
-contract deployed to: 0xfebC0e53106835Cb0eF4B65A219D092807D4d99e
+contract deployed to: 0x8601E26Bd9826563C5d61083746F20Fd4AF6d3a3
 ```
 
 ```shell
 See details in hashscan : 
- https://hashscan.io/testnet/address/0xfebC0e53106835Cb0eF4B65A219D092807D4d99e 
+ https://hashscan.io/testnet/address/0x8601E26Bd9826563C5d61083746F20Fd4AF6d3a3 
  ```
 
 
 ## command to get the metadata
 ```shell
 solc --bin --abi --metadata -o ./contracts ./contracts/PicknGet.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol
+```
+
+## command to get the metadata for stack too deep error
+```shell
+solc --bin --abi --metadata --via-ir -o ./contracts ./contracts/PicknGet.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol 
 ```
 
 ## contract abi

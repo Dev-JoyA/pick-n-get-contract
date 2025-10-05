@@ -10,8 +10,9 @@ contract User{
         uint256 id;
         address userAddress;
         string homeAddress;
-        uint8 phoneNumber;
+        string  phoneNumber;
         string name;
+        bytes profilePicture;
     }
 
     //used to get userADetails id and address by id
@@ -23,7 +24,7 @@ contract User{
     error NotFound();
     error UserNotRegistered();
    
-    function _registerUser(string memory _address, uint8 _number, string memory _name) internal {
+    function _registerUser(string memory _address, string memory _number, string memory _name, bytes memory _picture) public {
         if(msg.sender == address(0)){
             revert NotFound();
         }
@@ -35,7 +36,8 @@ contract User{
             userAddress : msg.sender,
             homeAddress : _address,
             phoneNumber : _number,
-            name : _name
+            name : _name,
+            profilePicture : _picture
 
         });
 

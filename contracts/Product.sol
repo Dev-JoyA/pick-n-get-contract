@@ -31,9 +31,9 @@ contract Product {
     mapping (uint256 => Details) public ownerDetails;
     // check if its the owner of the product by id
     mapping (uint256 => address) public productOwner;
-    //registration Id
+    // //registration Id
     mapping (address => uint256) public registrationId;
-    //registration Address
+    // //registration Address
     mapping (uint256 => address) public registrationAddress;
     mapping (uint256 => mapping(uint256 => Products)) public  allProductsByProducer;
     //used for looking up a producer by his id;
@@ -54,7 +54,7 @@ contract Product {
     error ProductSoldOut();
     error InsufficientStock();
 
-    function registerProductOwner (address _producer, string memory  _name, string memory _country, uint256 _number) internal {
+    function registerProductOwner (address _producer, string memory  _name, string memory _country, uint256 _number) public {
         if(_producer == address(0)){
             revert Invalid(_producer);
         }
