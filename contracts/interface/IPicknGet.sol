@@ -7,21 +7,22 @@ interface IPicknGet
  {
    event ItemRecycled(address indexed user, uint256 itemId, string itemType, uint256 weight);
 
-    function registerUser() external ;
+    function registerUser(string memory _address, string memory _number, string memory _name, bytes memory _picture) external ;
 
     function registerAdmin(address _admin) external;
 
     function registerProducer(string memory  _name, string memory _country, uint256 _number) external ;
 
      function riderApplication(string memory _name, 
-                              uint8 _number, 
+                              string memory _number, 
                               string memory _vehicleNumber,
                               string memory _homeAddress,
                               string memory _country,
                               uint256 _capacity,
                               bytes memory _image,
                               bytes memory _vehicleRegistration,
-                              VehicleType _vehicleType
+                              VehicleType _vehicleType,
+                              bytes memory _picture
                               ) external ;
 
     function approveRider(uint256 _riderId) external ;

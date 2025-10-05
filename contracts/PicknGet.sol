@@ -6,7 +6,7 @@ import "./Product.sol";
 import "./User.sol";
 import "./library/ItemLib.sol";
 
-contract PicknGet is User, Admin, Product {
+contract PicknGet is User, Admin, Product{
     using ItemLib for string;
     uint8 constant DECIMALS = 8;
     uint256 public riderCount;
@@ -28,7 +28,7 @@ contract PicknGet is User, Admin, Product {
     struct RiderDetails {
         uint256 id;
         string name;
-        uint8 phoneNumber;
+        string phoneNumber;
         string vehicleNumber;
         address walletAddress;
         string homeAddress;
@@ -38,6 +38,7 @@ contract PicknGet is User, Admin, Product {
         bytes vehicleImage;
         bytes vehicleRegistrationImage;
         VehicleType vehicleType;
+        bytes profilePicture;
     }
     // user id to recycleid mapping
     mapping (uint256 => mapping(uint256 => bool)) public hasUserReceivedPayment;
@@ -46,13 +47,12 @@ contract PicknGet is User, Admin, Product {
     mapping (uint256 => mapping (uint256 => RecycledItems)) public itemByUserId;
     mapping (uint256 => bool) public hasRecycled;
     mapping (uint256 => uint256) public recycledItemId;
-    //userId to weight
     mapping (uint256 => uint256) public totalRecycleddByUser;
-    // userId to amount
     mapping (uint256 => uint256) public totalEarned;
 
     mapping (uint256 => RiderDetails) public riderId;
     mapping (uint256 => bool) public validRider;
+    mapping (uint256 => bool) public isApproved;
 
     error AlreadyPaid();
     error NoRecycleItem();
@@ -62,15 +62,15 @@ contract PicknGet is User, Admin, Product {
     event ItemRecycled(address indexed user, uint256 itemId, string itemType, uint256 weight);
     event PaidForRecycledItem(address indexed user, uint256 indexed userId, uint256 itemId, ItemLib.ItemType itemType);
     event RiderApproved(uint256 indexed riderId, string _name, 
-                              uint8 _number, 
+                              string _number, 
                               string  _vehicleNumber,
                               bytes  _image,
                               string _country,
                               VehicleType _vehicleType);
 
 
-    function registerUser(string memory _address, uint8 _number, string memory _name) public {
-        _registerUser( _address, _number, _name);
+    function registerUser(string memory _address, string memory _number, string memory _name, bytes memory _picture) public {
+        _registerUser( _address, _number, _name, _picture);
     }
 
     function registerAdmin(address _admin) public {
@@ -82,14 +82,16 @@ contract PicknGet is User, Admin, Product {
     }
 
     function riderApplication(string memory _name, 
-                              uint8 _number, 
+                              string memory _number, 
                               string memory _vehicleNumber,
                               string memory _homeAddress,
                               string memory _country,
                               uint256 _capacity,
                               bytes memory _image,
                               bytes memory _vehicleRegistration,
-                              VehicleType _vehicleType
+                              VehicleType _vehicleType,
+                              bytes memory _picture
+
                               ) public 
         {
         require(riderId[riderCount].id == 0, "Already registered");
@@ -106,13 +108,17 @@ contract PicknGet is User, Admin, Product {
             capacity : _capacity,
             vehicleImage : _image,
             vehicleRegistrationImage : _vehicleRegistration,
-            vehicleType : _vehicleType
+            vehicleType : _vehicleType,
+            profilePicture : _picture
         }); 
     }
 
     function approveRider(uint256 _riderId) public {
         onlyAdmin();
-        if(riderId[_riderId].id == _riderId){
+        if(isApproved[_riderId]){
+            revert ("Rider is already approved");
+        }
+        if(riderId[_riderId].id != _riderId){
             revert ("Rider does not exist with that Id");
         }
         if(riderId[_riderId].riderStatus == RiderStatus.Rejected){
@@ -120,6 +126,7 @@ contract PicknGet is User, Admin, Product {
         }
         riderId[_riderId].riderStatus = RiderStatus.Approved;
         validRider[_riderId] = true;
+        isApproved[_riderId] = true;
         emit RiderApproved(_riderId, riderId[_riderId].name, riderId[_riderId].phoneNumber, riderId[_riderId].vehicleNumber, riderId[_riderId].vehicleImage, riderId[_riderId].country, riderId[_riderId].vehicleType);
     }
 
@@ -189,7 +196,6 @@ contract PicknGet is User, Admin, Product {
         uint256 amount = itemWeight * rate;
 
         emit PaidForRecycledItem(user, _userId, _recycledItemId, _rType);
-        // payable(user).transfer(amount * (10 ** DECIMALS));
         (bool success, ) = payable(user).call{value: amount * (10 ** DECIMALS)}("");
         require(success, "Transfer failed");
         totalEarned[_userId] += amount;
@@ -204,9 +210,9 @@ contract PicknGet is User, Admin, Product {
         _deleteAdmin(_admin);
     }
 
-    function deleteAdminById(uint256 _adminId) public {
-        _deleteAdminById(_adminId);
-    }
+    // function deleteAdminById(uint256 _adminId) public {
+    //     _deleteAdminById(_adminId);
+    // }
 
     function setRate(ItemLib.ItemType _type, uint256 _rate) public {
         _setRate(_type, _rate);
