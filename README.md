@@ -21,12 +21,12 @@ PicknGetModule#PicknGet -
 
 ## contract address
 ```shell
-contract deployed to: 0x8601E26Bd9826563C5d61083746F20Fd4AF6d3a3
+contract deployed to: 0xbE8443fE76518d09E815D860e9e467e119a602f3
 ```
 
 ```shell
 See details in hashscan : 
- https://hashscan.io/testnet/address/0x8601E26Bd9826563C5d61083746F20Fd4AF6d3a3 
+ 0xf7b81983991909bc5702a280d755a5bd5a97ea0d8a7661e7d717c473d456cb0c 
  ```
 
 
@@ -42,7 +42,7 @@ solc --bin --abi --metadata --via-ir -o ./contracts ./contracts/PicknGet.sol ./c
 
 ## contract abi
 ```shell
-https://hashscan.io/testnet/contract/0.0.6879372/abi
+https://hashscan.io/testnet/contract/0.0.6960598/abi
 ```
 
 
