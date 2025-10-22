@@ -6,10 +6,14 @@ import "./Product.sol";
 import "./User.sol";
 import "./library/ItemLib.sol";
 
-contract PicknGet is User, Admin, Product{
+contract PicknGet is User, Admin{
     using ItemLib for string;
     uint8 constant DECIMALS = 8;
     uint256 public riderCount;
+
+    constructor(address _superAdmin){
+        SUPER_ADMIN = _superAdmin;
+    }
 
     enum ItemStatus {Pending_Confirmation, Confirmed, Sold, Paid}
     enum RiderStatus {Pending, Approved, Rejected, Banned}
@@ -40,12 +44,11 @@ contract PicknGet is User, Admin, Product{
         VehicleType vehicleType;
         bytes profilePicture;
     }
-    // user id to recycleid mapping
+    
     mapping (uint256 => mapping(uint256 => bool)) public hasUserReceivedPayment;
-
-    //userId mapped to itemId and items 
     mapping (uint256 => mapping (uint256 => RecycledItems)) public itemByUserId;
     mapping (uint256 => bool) public hasRecycled;
+    
     mapping (uint256 => uint256) public recycledItemId;
     mapping (uint256 => uint256) public totalRecycleddByUser;
     mapping (uint256 => uint256) public totalEarned;
@@ -77,9 +80,6 @@ contract PicknGet is User, Admin, Product{
         _registerAdmin(_admin);
     }
 
-    function registerProducer(string memory  _name, string memory _country, uint256 _number) public {
-        registerProductOwner(msg.sender, _name, _country, _number);    
-    }
 
     function riderApplication(string memory _name, 
                               string memory _number, 
@@ -209,10 +209,6 @@ contract PicknGet is User, Admin, Product{
     function deleteAdmin(address _admin) public {
         _deleteAdmin(_admin);
     }
-
-    // function deleteAdminById(uint256 _adminId) public {
-    //     _deleteAdminById(_adminId);
-    // }
 
     function setRate(ItemLib.ItemType _type, uint256 _rate) public {
         _setRate(_type, _rate);

@@ -22,13 +22,13 @@ const source = fs.readFileSync("./contracts/PicknGet.sol", "utf8");
 async function main() {
     console.log("Deploying contract...");
     const factory = new ethers.ContractFactory(abi, bytecode, signer);
-    const contract = await factory.deploy();
+    const contract = await factory.deploy(process.env.SUPER_ADMIN_ADDRESS);
     await contract.waitForDeployment();
     const contractAddress = await contract.getAddress();
     const deployTxHash = contract.deploymentTransaction().hash;
 
-    console.log(`✅ Contract deployed at: ${contractAddress}`);
-    console.log(`Deployment Tx Hash: ${deployTxHash}`);
+    console.log(`PicknGet Contract deployed at: ${contractAddress}`);
+    console.log(`PicknGet Deployment Tx Hash: ${deployTxHash}`);
     const body = {
       address: contractAddress,
     chain: "296", 
@@ -40,8 +40,8 @@ async function main() {
     chosenContract: "PicknGet"
   };
 
-    console.log(`Contract deployed to: ${contractAddress}\n`);
-    console.log(`See details in hashscan : \n ${explorerURL}/address/${contractAddress} \n`);
+    console.log(`PicknGet Contract deployed to: ${contractAddress}\n`);
+    console.log(`See picknGet details in hashscan : \n ${explorerURL}/address/${contractAddress} \n`);
 
     
 }
