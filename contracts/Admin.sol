@@ -8,7 +8,7 @@ contract Admin {
 
     address[] admins;
     uint256 count;
-    address constant public SUPER_ADMIN = 0x71d9edF4D3E671274852a992ab331A8f4775b3F9;
+    address public SUPER_ADMIN;
 
     error NotAuthorised();
     error InValid();

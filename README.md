@@ -16,17 +16,17 @@ npx hardhat ignition deploy --network testnet ignition/modules/PicknGet.ts
 Deployed txn hash:
 
 PicknGetModule#PicknGet - 
-0x52bfaacd9c3c655700ba1800b2a3e9f6b6c9eba442d081b75b6c8051cc825aa8
+0x372cd11af796bb3a8bf7fbf0191df52b7141752fc5f5c79d593b22391b270eb8
 ```
 
 ## contract address
 ```shell
-contract deployed to: 0xbE8443fE76518d09E815D860e9e467e119a602f3
+contract deployed to: 0x501DcAFCBcfce2AA6A8a92F9D5Db1843aB780363
 ```
 
 ```shell
 See details in hashscan : 
- 0xf7b81983991909bc5702a280d755a5bd5a97ea0d8a7661e7d717c473d456cb0c 
+ https://hashscan.io/testnet/address/0x501DcAFCBcfce2AA6A8a92F9D5Db1843aB780363 
  ```
 
 
@@ -42,8 +42,23 @@ solc --bin --abi --metadata --via-ir -o ./contracts ./contracts/PicknGet.sol ./c
 
 ## contract abi
 ```shell
-https://hashscan.io/testnet/contract/0.0.6960598/abi
+https://hashscan.io/testnet/contract/0.0.7110475/abi
 ```
+
+##
+```shell
+Deploying contract...
+Product contract deployed at: 0xBB5eD93236774816D11ba68D80923a8eCf27C484
+Product Deployment Tx Hash: 0x7da18a40cc71243d1aa07a50b655572b7cac996f9c835e6623a48a12bd024039
+
+See product details in hashscan : 
+ https://hashscan.io/testnet/address/0xBB5eD93236774816D11ba68D80923a8eCf27C484 
+ ```
+
+ ## Product contract abi
+ ```shell
+ https://hashscan.io/testnet/contract/0.0.7110490/abi
+ ```
 
 
 

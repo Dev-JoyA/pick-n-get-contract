@@ -25,28 +25,31 @@ contract Product {
         ProductStatus productStatus;
     }
 
-    //registration id 
+   
     mapping(uint256 => bool) public isProducerRegistered;
-    //registration id per details 
+    
     mapping (uint256 => Details) public ownerDetails;
-    // check if its the owner of the product by id
+ 
     mapping (uint256 => address) public productOwner;
-    // //registration Id
+
     mapping (address => uint256) public registrationId;
-    // //registration Address
+
     mapping (uint256 => address) public registrationAddress;
+
     mapping (uint256 => mapping(uint256 => Products)) public  allProductsByProducer;
-    //used for looking up a producer by his id;
+   
     mapping (uint256 => uint256) public productIdByOwner;
-    //producer id to number of product they have used for giving givingg id to a specific producer
+
     mapping (uint256 => uint256) public productCountByOwner;
+
     mapping (uint256 => bool) public validPid;
+
     mapping (uint256 => uint256[]) public productsByProducerId;
+
     mapping (uint256 => Products) public products;
+
     mapping (address => mapping(uint256 => bool)) public isProducerPaidForProduct;
     
-
-
     event ProductAdded(uint256 indexed id, address owner);
 
     error AlreadyRegistered();
@@ -75,13 +78,22 @@ contract Product {
     }
    
 
-    function getProductOwner(uint256 _id) internal view returns (address) {
+    function getProductOwner(uint256 _id) public view returns (address) {
         require(isProducerRegistered[_id], "Product not registered");
         return productOwner[_id];
     }
 
-    function _addProducts(uint256 _id, string memory _name, uint256 _quantity, string memory _description, bytes memory _data, uint256 _amount, uint8 _decimals) public {
-          if(isProducerRegistered[_id] == false){
+    function addProducts(
+        string memory _name, 
+        uint256 _quantity, 
+        string memory _description, 
+        bytes memory _data, 
+        uint256 _amount, 
+        uint8 _decimals
+        ) public {
+
+        uint256 _id = registrationId[msg.sender];
+        if(isProducerRegistered[_id] == false){
             revert ("Not Authorized");
         }
     
@@ -106,7 +118,7 @@ contract Product {
 
         productIds.push(productCountByOwner[_id]);
         productIdByOwner[productCountByOwner[_id]] = _id;
-        productsByProducerId[_id] = productIds; 
+        productsByProducerId[_id].push(productCountByOwner[_id]);
         validPid[productCountByOwner[_id]] = true;  
         products[productCountByOwner[_id]] = Products({
             productId : productCountByOwner[_id],
@@ -120,8 +132,8 @@ contract Product {
         });
     }
 
-    function _shopProduct(uint256 _pid, uint256 _quantity) internal  {
-          require(_pid > 0, "Invalid product ID");
+    function _shopProduct(uint256 _pid, uint256 _quantity) public payable  {
+        require(_pid > 0, "Invalid product ID");
         require(validPid[_pid] == true, "No product with that id" );
         uint256 _owner = productIdByOwner[_pid];
         address _producer = productOwner[_owner];
