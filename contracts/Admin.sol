@@ -23,11 +23,10 @@ contract Admin {
       if(!isAdminRegistered[msg.sender]){
             revert NotAuthorised();
         }
-
     }
 
     function _registerAdmin(address _admin) internal {
-        require(msg.sender == SUPER_ADMIN, "Only Super Admin can add Admin");
+        // require(msg.sender == SUPER_ADMIN, "Only Super Admin can add Admin");
         if(_admin == address(0)){
             revert InValid();
         }

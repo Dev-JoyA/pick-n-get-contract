@@ -18,6 +18,7 @@ contract PicknGet is User, Admin{
     enum ItemStatus {Pending_Confirmation, Confirmed, Sold, Paid}
     enum RiderStatus {Pending, Approved, Rejected, Banned}
     enum VehicleType {Bike, Car, Truck, Van}
+    enum Roles {Recycler, Rider, Admin}
 
    
     struct RecycledItems{
@@ -48,6 +49,7 @@ contract PicknGet is User, Admin{
     mapping (uint256 => mapping(uint256 => bool)) public hasUserReceivedPayment;
     mapping (uint256 => mapping (uint256 => RecycledItems)) public itemByUserId;
     mapping (uint256 => bool) public hasRecycled;
+    mapping (address => Roles ) public role;
     
     mapping (uint256 => uint256) public recycledItemId;
     mapping (uint256 => uint256) public totalRecycleddByUser;
@@ -61,6 +63,7 @@ contract PicknGet is User, Admin{
     error NoRecycleItem();
     error InsufficientPayment();
     error NotConfirmed();
+    error NotAllowed();
 
     event ItemRecycled(address indexed user, uint256 itemId, string itemType, uint256 weight);
     event PaidForRecycledItem(address indexed user, uint256 indexed userId, uint256 itemId, ItemLib.ItemType itemType);
@@ -73,11 +76,20 @@ contract PicknGet is User, Admin{
 
 
     function registerUser(string memory _address, string memory _number, string memory _name, bytes memory _picture) public {
+        if(role[msg.sender] == Roles.Admin || role[msg.sender] == Roles.Rider){
+            revert NotAllowed();
+        }
         _registerUser( _address, _number, _name, _picture);
+        role[msg.sender] = Roles.Recycler;
     }
 
     function registerAdmin(address _admin) public {
+        if(role[msg.sender] == Roles.Recycler || role[msg.sender] == Roles.Rider){
+            revert NotAllowed();
+        }
         _registerAdmin(_admin);
+        role[_admin] = Roles.Admin; 
+
     }
 
 
@@ -94,6 +106,9 @@ contract PicknGet is User, Admin{
 
                               ) public 
         {
+        if(role[msg.sender] == Roles.Admin || role[msg.sender] == Roles.Recycler){
+            revert NotAllowed();
+        }
         require(riderId[riderCount].id == 0, "Already registered");
         riderCount++;
         riderId[riderCount] = RiderDetails({
@@ -127,12 +142,13 @@ contract PicknGet is User, Admin{
         riderId[_riderId].riderStatus = RiderStatus.Approved;
         validRider[_riderId] = true;
         isApproved[_riderId] = true;
+        role[riderId[_riderId].walletAddress] = Roles.Rider;
         emit RiderApproved(_riderId, riderId[_riderId].name, riderId[_riderId].phoneNumber, riderId[_riderId].vehicleNumber, riderId[_riderId].vehicleImage, riderId[_riderId].country, riderId[_riderId].vehicleType);
     }
 
     function banRider(uint256 _riderId) public {
         onlyAdmin();
-        if(riderId[_riderId].id == _riderId){
+        if(riderId[_riderId].id != _riderId){
             revert ("Rider does not exist with that Id");
         }
         if(riderId[_riderId].riderStatus == RiderStatus.Rejected){
@@ -222,6 +238,16 @@ contract PicknGet is User, Admin{
         onlyAdmin();
         return address(this).balance;
     }
+
+    function getRole(address _user) public view returns (string memory) {
+        Roles userRole = role[_user];
+
+        if (userRole == Roles.Recycler) return "Recycler";
+        if (userRole == Roles.Rider) return "Rider";
+        if (userRole == Roles.Admin) return "Admin";
+        return "Unassigned";
+    }
+
 
     receive() external payable {}
     fallback() external payable {}    
