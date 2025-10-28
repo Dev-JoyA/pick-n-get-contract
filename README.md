@@ -14,19 +14,17 @@ npx hardhat ignition deploy --network testnet ignition/modules/PicknGet.ts
 
 ```shell
 Deployed txn hash:
-
-PicknGetModule#PicknGet - 
-0x372cd11af796bb3a8bf7fbf0191df52b7141752fc5f5c79d593b22391b270eb8
+0x7e28dcc10fad7b6b66a8fc76f74881f52407fbfa20ccdd7b330c882deaef630d
 ```
 
 ## contract address
 ```shell
-contract deployed to: 0x501DcAFCBcfce2AA6A8a92F9D5Db1843aB780363
+contract deployed to: 0x82B63E09E740302eb91116d7CC0E7039946Db134
 ```
 
 ```shell
 See details in hashscan : 
- https://hashscan.io/testnet/address/0x501DcAFCBcfce2AA6A8a92F9D5Db1843aB780363 
+ https://hashscan.io/testnet/address/0x82B63E09E740302eb91116d7CC0E7039946Db134
  ```
 
 
