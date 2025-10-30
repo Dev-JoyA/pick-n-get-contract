@@ -568,7 +568,7 @@ solc --bin --abi --metadata -o ./build ./contracts/PicknGet.sol ./contracts/Admi
 
 ## command to get the metadata for stack too deep error
 ```shell
-solc --bin --abi --metadata --overwrite--via-ir -o ./build ./contracts/PicknGet.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol
+solc --bin --abi --metadata --overwrite --via-ir -o ./build ./contracts/PicknGet.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol
 
 ```
 
@@ -576,7 +576,7 @@ solc --bin --abi --metadata --overwrite--via-ir -o ./build ./contracts/PicknGet.
 
 | Contract | Address | Network | Explorer | ABI |
 |-----------|----------|----------|-----------|-----|
-| **PicknGet** | `0xeaFB01a813E4f512e325Ff136469AB629aB9BDB2` | Hedera Testnet | [View on HashScan](https://hashscan.io/testnet/address/0xeaFB01a813E4f512e325Ff136469AB629aB9BDB2) | [ABI Link](https://hashscan.io/testnet/contract/0.0.7162151/abi) |
+| **PicknGet** | `0x2Caa291ceDF1c2b8AAA9053B1d3C496E3A5CF83A` | Hedera Testnet | [View on HashScan](https://hashscan.io/testnet/address/0x2Caa291ceDF1c2b8AAA9053B1d3C496E3A5CF83A) | [ABI Link](https://hashscan.io/testnet/contract/0.0.7162853/abi) |
 | **Product** | `0xe58bd1E50DB044821C2c5c93D0aC265cEA425395` | Hedera Testnet | [View on HashScan](https://hashscan.io/testnet/address/0xe58bd1E50DB044821C2c5c93D0aC265cEA425395) | [ABI Link](https://hashscan.io/testnet/contract/0.0.7162255/abi) |
 
 

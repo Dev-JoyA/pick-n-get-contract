@@ -18,7 +18,7 @@ contract PicknGet is User, Admin{
     enum ItemStatus {Pending_Confirmation, Confirmed, Sold, Paid}
     enum RiderStatus {Pending, Approved, Rejected, Banned}
     enum VehicleType {Bike, Car, Truck, Van}
-    enum Roles {Recycler, Rider, Admin}
+    enum Roles {Unassigned, Recycler, Rider, Admin}
 
    
     struct RecycledItems{
