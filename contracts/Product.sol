@@ -4,9 +4,14 @@ pragma solidity ^0.8.28;
 contract Product {
     uint256[] public productIds;
     uint256 public productCount;
-    uint256 private registrationCount;
+    uint256 public registrationCount;
+    address public pickngetContract;
 
     enum ProductStatus {Available, NotAvailable}
+
+    constructor(address _pickngetContract) {
+        pickngetContract = _pickngetContract;
+    }
 
     struct Details {
         string name;
@@ -173,8 +178,18 @@ contract Product {
                 break;
             }
         }
-        require(isProducerPaidForProduct[_producer][_pid] == false, "Already paid producer ");
-        payable(_producer).transfer(msg.value);
+        require(isProducerPaidForProduct[_producer][_pid] == false, "Already paid producer");
+        uint256 fee = msg.value / 10;
+        uint256 payout = msg.value - fee;
+        payable(pickngetContract).transfer(fee);
+        payable(_producer).transfer(payout);
         isProducerPaidForProduct[_producer][_pid] = true;
     }
+
+    receive() external payable {
+        payable(pickngetContract).transfer(msg.value);
+    }
+    fallback() external payable {
+        payable(pickngetContract).transfer(msg.value);
+    }   
 }
