@@ -58,6 +58,8 @@ contract PicknGet is User, Admin{
     mapping (uint256 => RiderDetails) public riderId;
     mapping (uint256 => bool) public validRider;
     mapping (uint256 => bool) public isApproved;
+    mapping(address => uint256) public riderIdByAddress;
+
 
     error AlreadyPaid();
     error NoRecycleItem();
@@ -73,19 +75,20 @@ contract PicknGet is User, Admin{
                               bytes  _image,
                               string _country,
                               VehicleType _vehicleType);
+    event RiderApplied(uint256 indexed riderId, address indexed wallet, string name);                         
 
 
-    function registerUser(string memory _address, string memory _number, string memory _name, bytes memory _picture) public {
+    function registerUser(string memory _homeAddress, string memory _number, string memory _name, bytes memory _picture) public {
         if(role[msg.sender] == Roles.Admin || role[msg.sender] == Roles.Rider){
-            revert NotAllowed();
+            revert ("User not allowed to apply as Recycler");
         }
-        _registerUser( _address, _number, _name, _picture);
+        _registerUser( _homeAddress, _number, _name, _picture);
         role[msg.sender] = Roles.Recycler;
     }
 
     function registerAdmin(address _admin) public {
         if(role[msg.sender] == Roles.Recycler || role[msg.sender] == Roles.Rider){
-            revert NotAllowed();
+            revert ("User not allowed to apply as an Admin");
         }
         _registerAdmin(_admin);
         role[_admin] = Roles.Admin; 
@@ -107,9 +110,9 @@ contract PicknGet is User, Admin{
                               ) public 
         {
         if(role[msg.sender] == Roles.Admin || role[msg.sender] == Roles.Recycler){
-            revert NotAllowed();
+            revert ("User not allowed to apply as Rider");
         }
-        require(riderId[riderCount].id == 0, "Already registered");
+        require(riderIdByAddress[msg.sender] == 0, "Already applied");
         riderCount++;
         riderId[riderCount] = RiderDetails({
             id : riderCount,
@@ -126,6 +129,8 @@ contract PicknGet is User, Admin{
             vehicleType : _vehicleType,
             profilePicture : _picture
         }); 
+        riderIdByAddress[msg.sender] = riderCount;
+        emit RiderApplied(riderCount, msg.sender, _name);
     }
 
     function approveRider(uint256 _riderId) public {
@@ -184,21 +189,25 @@ contract PicknGet is User, Admin{
     }
 
     function confirmItem(uint256 _riderId, uint256 _userId, uint256 _recycleItemId) public {
+        require(validRider[_riderId], "Not an approved rider");
+        require(riderId[_riderId].walletAddress == msg.sender, "Only rider wallet can confirm");
+
         if(!validRider[_riderId]){
             revert NotAuthorised();
         }
         if(!hasRecycled[_userId]){
             revert NoRecycleItem();
         }
-        require(recycledItemId[_userId] == _recycleItemId, "Item does not belong to user");
-
-        itemByUserId[_userId][_recycleItemId].itemStatus = ItemStatus.Confirmed;
+        require(_recycleItemId > 0 && _recycleItemId <= recycledItemId[_userId], "Invalid item ID");
+        RecycledItems storage item = itemByUserId[_userId][_recycleItemId];
+        require(item.itemId == _recycleItemId, "Item mismatch");
+        item.itemStatus = ItemStatus.Confirmed;
     }
 
     function payUser(uint256 _userId, uint256 _recycledItemId) public payable {
         onlyAdmin();
         address user = userAccountId[_userId].userAddress;
-        !_isRegistered(_userId);
+        _isRegistered(_userId);
         if(itemByUserId[_userId][_recycledItemId].itemStatus != ItemStatus.Confirmed){
             revert NotConfirmed();
         }
@@ -211,11 +220,17 @@ contract PicknGet is User, Admin{
         uint256 rate = rates[_rType];
         uint256 amount = itemWeight * rate;
 
-        emit PaidForRecycledItem(user, _userId, _recycledItemId, _rType);
-        (bool success, ) = payable(user).call{value: amount * (10 ** DECIMALS)}("");
+        require(address(this).balance >= amount, "Insufficient contract balance");
+
+        address payable recipient = payable(userAccountId[_userId].userAddress);
+
+        (bool success, ) = recipient.call{value: amount}("");
         require(success, "Transfer failed");
+
+        hasUserReceivedPayment[_userId][_recycledItemId] = true;
         totalEarned[_userId] += amount;
-        hasUserReceivedPayment[_userId][_recycledItemId] = true;   
+
+        emit PaidForRecycledItem(user, _userId, _recycledItemId, _rType);
     }
 
     function deleteUserAccount(address _user) public {

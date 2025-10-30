@@ -18,6 +18,7 @@ contract Admin {
     mapping(uint256 => address) public idToAdmin;
     mapping(ItemLib.ItemType => uint256) public rates;
 
+    event RateUpdated(ItemLib.ItemType indexed itemType, uint256 newRate);
 
     function _onlyAdmin() private view {
       if(!isAdminRegistered[msg.sender]){
@@ -36,7 +37,6 @@ contract Admin {
         isAdminRegistered[_admin] = true;
         idToAdmin[count] = _admin;
         adminId[_admin] = count;
-        idToAdmin[count] = _admin; 
     }
 
     function _deleteAdmin(address _admin) internal {
@@ -77,9 +77,10 @@ contract Admin {
     }
 
 
-    function _setRate(ItemLib.ItemType _type, uint256 _rate) internal{
+    function _setRate(ItemLib.ItemType _type, uint256 _rateTinybarsPerKg) internal{
         _onlyAdmin();
-        rates[_type] = _rate;
+        rates[_type] = _rateTinybarsPerKg;
+        emit RateUpdated(_type, _rateTinybarsPerKg);
     }
 
     function onlyAdmin() internal view {

@@ -3,6 +3,13 @@
 
 ---
 
+## 🔗 Quick Links
+- [Overview](#-overview)
+- [Smart Contract Architecture](#-smart-contract-architecture)
+- [Product Smart Contract](#-product-smart-contract)
+- [Deployment](#deployment)
+
+
 ## 📘 Overview
 
 The PicknGet contract combines **three major components**:
@@ -13,13 +20,16 @@ The PicknGet contract combines **three major components**:
 This creates a transparent, traceable, and tokenized ecosystem for **waste recycling and payment automation**.
 
 ---
-3️⃣ Core Features Summary (Visual Table)
-Feature	Description
-♻️ Recycling Rewards	Users earn HBAR for verified recycling actions
-🧑‍💼 Admin Oversight	Admins set rates, verify riders, and approve payouts
-🏍️ Rider Network	Riders confirm item pickup and delivery
-🪙 Instant Payments	Automatic payment via smart contract (HBAR tinybars)
-🧱 Secure Access Control	Role-based system (User, Rider, Admin, SuperAdmin)
+### Core Features Summary
+
+| Feature | Description |
+|----------|--------------|
+| ♻️ Recycling Rewards | Users earn HBAR for verified recycling actions |
+| 🧑‍💼 Admin Oversight | Admins set rates, verify riders, and approve payouts |
+| 🏍️ Rider Network | Riders confirm item pickup and delivery |
+| 🪙 Instant Payments | Automatic payment via smart contract (HBAR tinybars) |
+| 🧱 Secure Access Control | Role-based system (User, Rider, Admin, SuperAdmin) |
+
 
 ## 🧩 Smart Contract Architecture
 
@@ -63,6 +73,7 @@ The contract ensures high precision by multiplying payments with `10 ** DECIMALS
 
 All payments are made in **HBAR** (the native currency of Hedera).  
 Each recyclable item type (e.g., plastic, paper, metals) has an **admin-set rate**.
+All rates and payments are calculated using 8-decimal precision (DECIMALS = 8) to match HBAR’s smallest denomination — tinybar.
 
 The contract expects all payments and rates in **HBAR** (native Hedera currency), but internally it handles transfers in **tinybars** (1 HBAR = 10⁸ tinybars).
 
@@ -181,7 +192,20 @@ a **fast, fair, and eco-friendly distributed ledger** with:
 
 ---
 
-# 🌍Product Smart Contract
+## 🧠 Key Technical Points
+
+| Topic | Explanation |
+|--------|-------------|
+| **Precision Handling** | Payments handled in tinybars (10⁸ units = 1 HBAR) |
+| **Safety** | Double-spend prevention via state tracking |
+| **Role Enforcement** | Separate mappings for `Admin`, `Rider`, `Recycler` |
+| **Fund Management** | Admins can view balance but cannot withdraw arbitrarily |
+| **Payment Validation** | Each payment triggers a `.call{value: amount * (10**8)}` transfer |
+| **SuperAdmin Privilege** | Only the SuperAdmin can register or remove Admins (commented out for testing) |
+
+
+---
+## 🌍 Product Smart Contract
 
 ### 🧾 A decentralized marketplace for transparent and direct product sales between producers and buyers.
 
@@ -189,7 +213,7 @@ a **fast, fair, and eco-friendly distributed ledger** with:
 
 ## 💡 What It Does
 
-The **Product Smart Contract** is a blockchain-based system that allows **producers** to register their business, **add products**, and **sell them directly** to buyers — **without middlemen**.
+The **Product Smart Contract** is a dlt system that allows **producers** to register their business, **add products**, and **sell them directly** to buyers — **without middlemen**.
 
 Every product, payment, and ownership record is stored securely on the blockchain, ensuring **trust, transparency, and traceability**.
 
@@ -275,7 +299,7 @@ addProducts(
 
 A customer buys 2 pieces of “Gym Mat”:
 ```solidity
-_shopProduct(
+shopProduct(
     1, *producer id*
     2 *quantity*
     ) payable
@@ -300,6 +324,7 @@ _shopProduct(
 - 💵 Rejects incorrect payment amounts  
 - 🔁 Blocks repeated payment for the same product  
 - 🧮 Automatically manages stock levels  
+- **Fail-Safe Transfers** — Unintended transfers are automatically forwarded to PicknGet
 
 ---
 
@@ -341,19 +366,6 @@ Every major action emits an event for transparency:
 
 ---
 
-## 🧠 Key Technical Points
-
-| Topic | Explanation |
-|--------|-------------|
-| **Precision Handling** | Payments handled in tinybars (10⁸ units = 1 HBAR) |
-| **Safety** | Double-spend prevention via state tracking |
-| **Role Enforcement** | Separate mappings for `Admin`, `Rider`, `Recycler` |
-| **Fund Management** | Admins can view balance but cannot withdraw arbitrarily |
-| **Payment Validation** | Each payment triggers a `.call{value: amount * (10**8)}` transfer |
-| **SuperAdmin Privilege** | Only the SuperAdmin can register or remove Admins (commented out for testing) |
-
-
----
 
 ## 🧾 Example Scenario
 
@@ -509,68 +521,62 @@ By leveraging **Hedera’s DLT**, it ensures:
 **UNLICENSED** — intended for research, demonstration, and hackathon use.  
 Contact maintainers for enterprise licensing or collaboration.
 
+## 🧱 Tech Stack
 
-## Deployment
+- **Smart Contracts:** Solidity (^0.8.28)
+- **DLT:** Hedera Hashgraph
+- **Language:** JavaScript (for deployment scripts)
+- **Framework:** Hardhat
+- **Storage:** On-chain mappings
+- **Currency:** HBAR (8 decimals — tinybars)
 
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
 
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+## 🚀 Deployment & Installation
+
+Follow these steps to deploy the **PicknGet** and **Product** smart contracts to the Hedera Testnet:
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/<your-repo-url>.git
+   cd picknget
+    ```
+2. **Create an environment file**
+In the root directory, create a .env file and add your private key:
+    ```bash
+    PRIVATE_KEY="your_private_key_here"
+    ```
+3. **Deploy the contracts**
+Run the deployment script to deploy both the PicknGet and Product contracts: 
+    - for Pick-n-get Contract
+```bash
+npx hardhat run scripts/deploy.ts --network testnet
+```
+    - for Product Contract
+```bash
+npx hardhat run scripts/deployProduct.ts --network testnet
 ```
 
-After setting the variable, you can run the deployment with the Sepolia network:
+4. **Verify your deployment**
+Once deployment is complete, copy the contract address displayed in the console and verify it on Hashscan. 
 
-## command to deploy the contract
-
-```shell
-npx hardhat ignition deploy --network testnet ignition/modules/PicknGet.ts
-```
-
-```shell
-Deployed txn hash:
-0x7e28dcc10fad7b6b66a8fc76f74881f52407fbfa20ccdd7b330c882deaef630d
-```
-
-## contract address
-```shell
-contract deployed to: 0x82B63E09E740302eb91116d7CC0E7039946Db134
-```
-
-```shell
-See details in hashscan : 
- https://hashscan.io/testnet/address/0x82B63E09E740302eb91116d7CC0E7039946Db134
- ```
 
 
 ## command to get the metadata
 ```shell
-solc --bin --abi --metadata -o ./contracts ./contracts/PicknGet.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol
+solc --bin --abi --metadata -o ./build ./contracts/PicknGet.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol
 ```
 
 ## command to get the metadata for stack too deep error
 ```shell
-solc --bin --abi --metadata --via-ir -o ./contracts ./contracts/PicknGet.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol 
+solc --bin --abi --metadata --overwrite--via-ir -o ./build ./contracts/PicknGet.sol ./contracts/Admin.sol ./contracts/Product.sol ./contracts/User.sol ./contracts/library/ItemLib.sol
+
 ```
 
-## contract abi
-```shell
-https://hashscan.io/testnet/contract/0.0.7110475/abi
-```
+###  🧱 Deployment Details
 
-##
-```shell
-Deploying contract...
-Product contract deployed at: 0xBB5eD93236774816D11ba68D80923a8eCf27C484
-Product Deployment Tx Hash: 0x7da18a40cc71243d1aa07a50b655572b7cac996f9c835e6623a48a12bd024039
-
-See product details in hashscan : 
- https://hashscan.io/testnet/address/0xBB5eD93236774816D11ba68D80923a8eCf27C484 
- ```
-
- ## Product contract abi
- ```shell
- https://hashscan.io/testnet/contract/0.0.7110490/abi
- ```
-
+| Contract | Address | Network | Explorer | ABI |
+|-----------|----------|----------|-----------|-----|
+| **PicknGet** | `0xeaFB01a813E4f512e325Ff136469AB629aB9BDB2` | Hedera Testnet | [View on HashScan](https://hashscan.io/testnet/address/0xeaFB01a813E4f512e325Ff136469AB629aB9BDB2) | [ABI Link](https://hashscan.io/testnet/contract/0.0.7162151/abi) |
+| **Product** | `0xe58bd1E50DB044821C2c5c93D0aC265cEA425395` | Hedera Testnet | [View on HashScan](https://hashscan.io/testnet/address/0xe58bd1E50DB044821C2c5c93D0aC265cEA425395) | [ABI Link](https://hashscan.io/testnet/contract/0.0.7162255/abi) |
 
 

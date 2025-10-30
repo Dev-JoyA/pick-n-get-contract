@@ -2,194 +2,132 @@
 pragma solidity ^0.8.28;
 
 contract Product {
-    uint256[] public productIds;
-    uint256 public productCount;
+    uint8 constant DECIMALS = 8;
+    uint256 public globalProductId;
     uint256 public registrationCount;
     address public pickngetContract;
 
     enum ProductStatus {Available, NotAvailable}
 
     constructor(address _pickngetContract) {
+        require(_pickngetContract != address(0), "Invalid PicknGet address"); 
         pickngetContract = _pickngetContract;
     }
 
-    struct Details {
+    struct Producer {
         string name;
         string country;
         uint256 phoneNumber;
+        bool isRegistered;
     }
 
-    struct Products {
+    struct ProductItem {
         uint256 productId;
         string name;
         uint256 quantity;
         address owner;
         string description;
-        bytes data;
+        bytes data; 
         uint256 amount;
         ProductStatus productStatus;
     }
 
-   
-    mapping(uint256 => bool) public isProducerRegistered;
-    
-    mapping (uint256 => Details) public ownerDetails;
- 
-    mapping (uint256 => address) public productOwner;
+    mapping(address => Producer) public producers;           
+    mapping(uint256 => ProductItem) public products;         
+    mapping(address => uint256[]) public productsByOwner;    
+    mapping(uint256 => mapping(address => bool)) public hasBuyerPaid; 
 
-    mapping (address => uint256) public registrationId;
+    event ProducerRegistered(address indexed producer, uint256 registrationId);
+    event ProductAdded(uint256 indexed productId, address indexed owner);
+    event ProductPurchased(uint256 indexed productId, address indexed buyer, uint256 amountPaid);
 
-    mapping (uint256 => address) public registrationAddress;
-
-    mapping (uint256 => mapping(uint256 => Products)) public  allProductsByProducer;
-   
-    mapping (uint256 => uint256) public productIdByOwner;
-
-    mapping (uint256 => uint256) public productCountByOwner;
-
-    mapping (uint256 => bool) public validPid;
-
-    mapping (uint256 => uint256[]) public productsByProducerId;
-
-    mapping (uint256 => Products) public products;
-
-    mapping (address => mapping(uint256 => bool)) public isProducerPaidForProduct;
-    
-    event ProductAdded(uint256 indexed id, address owner);
 
     error AlreadyRegistered();
-    error Invalid(address);
+    error InvalidAddress();
     error ProductSoldOut();
     error InsufficientStock();
+    error NotAuthorized();
 
-    function registerProductOwner (address _producer, string memory  _name, string memory _country, uint256 _number) public {
-        if(_producer == address(0)){
-            revert Invalid(_producer);
-        }
-        if(registrationId[_producer] != 0){
-            revert AlreadyRegistered();
-        }
+  
+    function registerProducer(address _producer, string memory _name, string memory _country, uint256 _phoneNumber) external {
+        if(_producer == address(0)) revert InvalidAddress();
+        if(producers[_producer].isRegistered) revert AlreadyRegistered();
 
         registrationCount++;
-        ownerDetails[registrationCount] = Details({
-            name : _name,
-            country : _country,
-            phoneNumber : _number
+        producers[_producer] = Producer({
+            name: _name,
+            country: _country,
+            phoneNumber: _phoneNumber,
+            isRegistered: true
         });
 
-        isProducerRegistered[registrationCount] = true;
-        registrationId[_producer] = registrationCount;
-        registrationAddress[registrationCount] = _producer; 
-    }
-   
-
-    function getProductOwner(uint256 _id) public view returns (address) {
-        require(isProducerRegistered[_id], "Product not registered");
-        return productOwner[_id];
+        emit ProducerRegistered(_producer, registrationCount);
     }
 
-    function addProducts(
-        string memory _name, 
-        uint256 _quantity, 
-        string memory _description, 
-        bytes memory _data, 
-        uint256 _amount, 
-        uint8 _decimals
-        ) public {
+    function addProduct(string memory _name, uint256 _quantity, string memory _description, bytes memory _data, uint256 _amount) external {
+        Producer memory producer = producers[msg.sender];
+        if(!producer.isRegistered) revert NotAuthorized();
 
-        uint256 _id = registrationId[msg.sender];
-        if(isProducerRegistered[_id] == false){
-            revert ("Not Authorized");
-        }
-    
-        address _owner = registrationAddress[_id];
+        globalProductId++;
+        uint256 productId = globalProductId;
 
-        productOwner[_id] = _owner;
-
-        productCount++;
-
-        productCountByOwner[_id]++;
-        
-        allProductsByProducer[_id][productCountByOwner[_id]] = Products({
-            productId : productCountByOwner[_id],
-            name : _name,
-            quantity : _quantity,
-            owner : _owner,
-            description : _description,
-            data : _data,
-            amount : _amount * (10**_decimals),
-            productStatus : ProductStatus.Available
+        products[productId] = ProductItem({
+            productId: productId,
+            name: _name,
+            quantity: _quantity,
+            owner: msg.sender,
+            description: _description,
+            data: _data,
+            amount: _amount * (10**DECIMALS),
+            productStatus: ProductStatus.Available
         });
 
-        productIds.push(productCountByOwner[_id]);
-        productIdByOwner[productCountByOwner[_id]] = _id;
-        productsByProducerId[_id].push(productCountByOwner[_id]);
-        validPid[productCountByOwner[_id]] = true;  
-        products[productCountByOwner[_id]] = Products({
-            productId : productCountByOwner[_id],
-            name : _name,
-            quantity : _quantity,
-            owner : _owner,
-            description : _description,
-            data : _data,
-            amount : _amount * (10**_decimals),
-            productStatus : ProductStatus.Available
-        });
+        productsByOwner[msg.sender].push(productId);
+
+        emit ProductAdded(productId, msg.sender);
     }
 
-    function _shopProduct(uint256 _pid, uint256 _quantity) public payable  {
-        require(_pid > 0, "Invalid product ID");
-        require(validPid[_pid] == true, "No product with that id" );
-        uint256 _owner = productIdByOwner[_pid];
-        address _producer = productOwner[_owner];
-        Products storage product = allProductsByProducer[_owner][_pid]; 
+    function shopProduct(uint256 _productId, uint256 _quantity) external payable {
+        ProductItem storage product = products[_productId];
+        if(product.productStatus == ProductStatus.NotAvailable) revert ProductSoldOut();
+        if(product.quantity < _quantity) revert InsufficientStock();
 
-        if(product.productStatus == ProductStatus.NotAvailable){
-            revert ProductSoldOut();
-        }
-
-        if (product.quantity < _quantity) {
-            revert InsufficientStock();
-        }
-
-        uint256 totalCost = _quantity * product.amount ;
+        uint256 totalCost = _quantity * product.amount;
         require(msg.value == totalCost, "Incorrect payment");
 
-        productCount--;
-        productCountByOwner[_owner]--;
-        for(uint256 i = 0; i < productIds.length; i++){
-            if(productIds[i] == _pid){
-                productIds[i] = productIds[productIds.length - 1];
-                productIds.pop();
-                break;
-            }
-        }
-
         product.quantity -= _quantity;
-        if (product.quantity == 0) {
-            product.productStatus = ProductStatus.NotAvailable;
-        }
+        if(product.quantity == 0) product.productStatus = ProductStatus.NotAvailable;
 
-        uint256[] storage activeProduct = productsByProducerId[_owner];
-        for(uint256 i = 0; i < activeProduct.length; i++){
-            if(activeProduct[i] == _pid){
-                activeProduct[i] = activeProduct[activeProduct.length - 1];
-                activeProduct.pop();
-                break;
-            }
-        }
-        require(isProducerPaidForProduct[_producer][_pid] == false, "Already paid producer");
+       
         uint256 fee = msg.value / 10;
         uint256 payout = msg.value - fee;
-        payable(pickngetContract).transfer(fee);
-        payable(_producer).transfer(payout);
-        isProducerPaidForProduct[_producer][_pid] = true;
+
+        (bool sentFee, ) = payable(pickngetContract).call{value: fee}("");
+        require(sentFee, "Fee transfer failed");
+        (bool sentPayout, ) = payable(product.owner).call{value: payout}("");
+        require(sentPayout, "Payout failed");
+
+        hasBuyerPaid[_productId][msg.sender] = true;
+
+        emit ProductPurchased(_productId, msg.sender, msg.value);
+    }
+
+
+    function getProductsByOwner(address _owner) external view returns(uint256[] memory) {
+        return productsByOwner[_owner];
+    }
+
+    function getProductOwner(uint256 _productId) external view returns(address) {
+        return products[_productId].owner;
     }
 
     receive() external payable {
-        payable(pickngetContract).transfer(msg.value);
+        (bool sent, ) = payable(pickngetContract).call{value: msg.value}("");
+        require(sent, "Forward failed");
     }
+
     fallback() external payable {
-        payable(pickngetContract).transfer(msg.value);
-    }   
+        (bool sent, ) = payable(pickngetContract).call{value: msg.value}("");
+        require(sent, "Forward failed");
+    }
 }
