@@ -21,7 +21,7 @@ const source = fs.readFileSync("./contracts/Product.sol", "utf8");
 
 async function main() {
     console.log("Deploying contract...");
-    const pickngetContract = "0xeaFB01a813E4f512e325Ff136469AB629aB9BDB2"
+    const pickngetContract = "0x2Caa291ceDF1c2b8AAA9053B1d3C496E3A5CF83A"
     const factory = new ethers.ContractFactory(abi, bytecode, signer);
     const contract = await factory.deploy(pickngetContract);
     await contract.waitForDeployment();
