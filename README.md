@@ -577,6 +577,6 @@ solc --bin --abi --metadata --overwrite --via-ir -o ./build ./contracts/PicknGet
 | Contract | Address | Network | Explorer | ABI |
 |-----------|----------|----------|-----------|-----|
 | **PicknGet** | `0x2Caa291ceDF1c2b8AAA9053B1d3C496E3A5CF83A` | Hedera Testnet | [View on HashScan](https://hashscan.io/testnet/address/0x2Caa291ceDF1c2b8AAA9053B1d3C496E3A5CF83A) | [ABI Link](https://hashscan.io/testnet/contract/0.0.7162853/abi) |
-| **Product** | `0x0F55d8eb68A24cB091Fe72030c43479961a2dB32` | Hedera Testnet | [View on HashScan](https://hashscan.io/testnet/address/0x0F55d8eb68A24cB091Fe72030c43479961a2dB32) | [ABI Link](https://hashscan.io/testnet/contract/0.0.7162255/abi) |
+| **Product** | `0x0F55d8eb68A24cB091Fe72030c43479961a2dB32` | Hedera Testnet | [View on HashScan](https://hashscan.io/testnet/address/0x0F55d8eb68A24cB091Fe72030c43479961a2dB32) | [ABI Link](https://hashscan.io/testnet/contract/0.0.7165733/abi) |
 
 
