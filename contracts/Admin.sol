@@ -8,7 +8,7 @@ contract Admin {
 
     address[] admins;
     uint256 count;
-    address constant public SUPER_ADMIN = 0x71d9edF4D3E671274852a992ab331A8f4775b3F9;
+    address public SUPER_ADMIN;
 
     error NotAuthorised();
     error InValid();
@@ -18,16 +18,16 @@ contract Admin {
     mapping(uint256 => address) public idToAdmin;
     mapping(ItemLib.ItemType => uint256) public rates;
 
+    event RateUpdated(ItemLib.ItemType indexed itemType, uint256 newRate);
 
     function _onlyAdmin() private view {
       if(!isAdminRegistered[msg.sender]){
             revert NotAuthorised();
         }
-
     }
 
     function _registerAdmin(address _admin) internal {
-        require(msg.sender == SUPER_ADMIN, "Only Super Admin can add Admin");
+        // require(msg.sender == SUPER_ADMIN, "Only Super Admin can add Admin");
         if(_admin == address(0)){
             revert InValid();
         }
@@ -37,7 +37,6 @@ contract Admin {
         isAdminRegistered[_admin] = true;
         idToAdmin[count] = _admin;
         adminId[_admin] = count;
-        idToAdmin[count] = _admin; 
     }
 
     function _deleteAdmin(address _admin) internal {
@@ -78,9 +77,10 @@ contract Admin {
     }
 
 
-    function _setRate(ItemLib.ItemType _type, uint256 _rate) internal{
+    function _setRate(ItemLib.ItemType _type, uint256 _rateTinybarsPerKg) internal{
         _onlyAdmin();
-        rates[_type] = _rate;
+        rates[_type] = _rateTinybarsPerKg;
+        emit RateUpdated(_type, _rateTinybarsPerKg);
     }
 
     function onlyAdmin() internal view {

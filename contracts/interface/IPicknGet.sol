@@ -11,8 +11,6 @@ interface IPicknGet
 
     function registerAdmin(address _admin) external;
 
-    function registerProducer(string memory  _name, string memory _country, uint256 _number) external ;
-
      function riderApplication(string memory _name, 
                               string memory _number, 
                               string memory _vehicleNumber,
@@ -35,15 +33,9 @@ interface IPicknGet
 
     function deleteUserAccount(address _user) external ;
 
-    function deleteAdmin(address _admin) external;
-
-    function deleteAdminById(uint256 _adminId) external;
+    function deleteAdmin(address _admin) external ; 
 
     function setRate(uint256 _rate) external ;
-
-    function addProduct(uint256 _id, string memory _name, uint256 _quantity, bytes memory _data, uint256 _amount) external;
-
-    function shopProduct(uint256 _pid, uint256 _quantity) external payable;
 
     function fundContract() external payable ;
 

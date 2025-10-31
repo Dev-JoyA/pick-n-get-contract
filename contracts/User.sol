@@ -6,7 +6,7 @@ contract User{
     address[] private users;
     uint256 private count;
 
-    struct UserDetils {
+    struct UserDetails {
         uint256 id;
         address userAddress;
         string homeAddress;
@@ -15,26 +15,24 @@ contract User{
         bytes profilePicture;
     }
 
-    //used to get userADetails id and address by id
-    mapping (uint256 => UserDetils) public userAccountId;
+    mapping (uint256 => UserDetails) public userAccountId;
 
-    //used to get userAccount id by address
     mapping (address => uint256) public userId;
     
     error NotFound();
     error UserNotRegistered();
    
-    function _registerUser(string memory _address, string memory _number, string memory _name, bytes memory _picture) public {
+    function _registerUser(string memory _homeAddress, string memory _number, string memory _name, bytes memory _picture) internal {
         if(msg.sender == address(0)){
             revert NotFound();
         }
         require(userId[msg.sender] == 0, "user already have an id");
 
         count++;
-        userAccountId[count] = UserDetils({
+        userAccountId[count] = UserDetails({
             id : count,
             userAddress : msg.sender,
-            homeAddress : _address,
+            homeAddress : _homeAddress,
             phoneNumber : _number,
             name : _name,
             profilePicture : _picture
@@ -60,7 +58,7 @@ contract User{
 
 
    function _deleteUser(address _user) internal {
-    if(_isRegistered(_user) == false){
+    if (userId[_user] == 0){
         revert NotFound();
     }
     for (uint256 i = 0; i < users.length; i++) {
